@@ -72,13 +72,10 @@ public class test {
       
     public static void main(String args[]) throws StructException, IOException {  
     	byte[] data = {0x00,0x0a,(byte) 0xaa,0x55,0x10,0x05,0x00,0x00,0x00,0x01};
-    	InputStream in = new FileInputStream("C:/Users/blackmore/Desktop/相逢何必曾相识.mp3");
-    	byte[] b = new byte[1024*1024];
-    	in.skip(1024*1024);
-    	in.read(b);
-    	System.out.println(b.length);
-    	OutputStream out = new FileOutputStream("C:/Users/blackmore/Desktop/相逢何必曾相识1.mp3");
-    	out.write(b);
-    	tools.printArray(b);
+    	System.out.println(0xaa);
+    	byte b = (byte) 0xaa;
+    	System.out.println(b);
+    	System.out.println(b==0xaa);
+    	System.out.println((b&0x0ff)==0xaa);
     }  
 } 

@@ -56,6 +56,8 @@ public class Rec implements Runnable {
 				byte[] data=receive(1024);
 				if(data == null){
 					System.out.println(s.getInetAddress().getHostAddress()+"已断开");
+					if(id!=0)
+						close();
 					s.close();
 					break;
 				}
@@ -64,7 +66,7 @@ public class Rec implements Runnable {
 			}catch(Exception e){
 				try {
 					System.out.println("id:"+id);
-//					if(id!=0)
+					if(id!=0)
 						close();
 					in.close();
 				} catch (IOException | StructException ioe) {
@@ -465,6 +467,7 @@ public class Rec implements Runnable {
 	 * */
 	public void close() throws StructException{
 		System.out.println("准备断开");
+		System.out.println("线程数："+Thread.activeCount());
 		UserDAO userdao = new UserDAO();
 		GroupDAO groupdao = new GroupDAO();
 		User user = userdao.get("select * from user where id ="+id);

@@ -1,0 +1,8 @@
+git remote
+git fetch origin
+git merge origin/master
+
+git status -s
+git add .
+git commit -m "第一次修改"
+git push origin master
