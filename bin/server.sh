@@ -1,1 +1,1 @@
-java -cp $CLASSPATH:../lib/javastruct.jar:../lib/ipLocatnService.jar:../lib/mysql-connector-java-5.0.8-bin.jar:../lib/gson-2.3.1.jar server.Server
+java -cp $CLASSPATH:../lib/javastruct.jar:../lib/ipLocationService.jar:../lib/mysql-connector-java-5.0.8-bin.jar:../lib/gson-2.3.1.jar server.Server
