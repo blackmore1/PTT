@@ -66,17 +66,14 @@ public class GroupDAO {
         }
     }
   
-    public void update(User user) {
+    public void update(Group groups) {
   
-        String sql = "update user set status = ?,ipv4 = ?,codenum = ?,codelist = ?,gps = ? where id = ?";
+        String sql = "update groups set usernum = ?,userlist = ? where id = ?";
         try (Connection c = getConnection(); PreparedStatement ps = c.prepareStatement(sql);) {
   
-        	ps.setBoolean(1, user.getStatus());
-            ps.setString(2, user.getIpv4());
-            ps.setInt(3, user.getCodenum());
-            ps.setString(4, user.getCodelist());
-            ps.setString(5, user.getGps());
-            ps.setInt(6, user.getId());
+        	ps.setInt(1, groups.getUsernum());
+            ps.setString(2, groups.getUserlist());
+            ps.setInt(3, groups.getId());
   
             ps.execute();
   

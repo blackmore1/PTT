@@ -16,7 +16,7 @@ public class userlisttest {
 		String[] strs = "12|32|2".split(regex);
 		System.out.println(strs.length);
 		String str ="192.168.0.106";
-		System.out.println(tools.getIp(str));
+//		System.out.println(tools.getIp(str));
 	}
 
 }

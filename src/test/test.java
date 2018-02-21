@@ -72,10 +72,7 @@ public class test {
       
     public static void main(String args[]) throws StructException, IOException {  
     	byte[] data = {0x00,0x0a,(byte) 0xaa,0x55,0x10,0x05,0x00,0x00,0x00,0x01};
-    	System.out.println(0xaa);
-    	byte b = (byte) 0xaa;
-    	System.out.println(b);
-    	System.out.println(b==0xaa);
-    	System.out.println((b&0x0ff)==0xaa);
+    	String[] ss = "3.lisi|2.zhangsan|".split("\\|");
+    	System.out.println(ss.length);
     }  
 } 

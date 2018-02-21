@@ -5,6 +5,10 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import bean.Group;
+import bean.User;
+import dao.GroupDAO;
+import dao.UserDAO;
 import struct.JavaStruct;
 import tool.codec;
 import tool.codec04;
@@ -27,9 +31,24 @@ public class Jtest {
 		this.b = JavaStruct.pack(c);
 	}
 
+	//@Test
+	public void adduser() {
+			User user = new User();
+			user.setId(1);
+			user.setName("haha");
+			user.setPwd("12345");
+			user.setCurrgroup(2);
+			user.setGroupnum(3);
+			user.setGrouplist("2|3|4");
+			UserDAO userdao = new UserDAO();
+			userdao.add(user);
+	}
 	@Test
-	public void test() {
-		fail("Not yet implemented");
+	public void testnull(){
+		GroupDAO groupdao = new GroupDAO();
+		Group group = groupdao.get(4);
+		if(group.getUserlist()!=null)
+		System.out.println(group.getUserlist());
 	}
 
 }

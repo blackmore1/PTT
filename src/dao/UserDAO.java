@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import bean.Group;
 import bean.User;
 
 public class UserDAO {
@@ -28,19 +29,35 @@ public class UserDAO {
   
     public void add(User user) {
   
-        String sql = "insert into user values(?,?,?,?)";
+        String sql = "insert into user values(?,?,?,?,?,?,?,?,?,?,?,?,?)";
         try (Connection c = getConnection(); PreparedStatement ps = c.prepareStatement(sql);) {
   
         	ps.setInt(1, user.getId());
-            ps.setString(2, user.getName());
-            ps.setString(3, user.getPwd());
-            ps.setBoolean(4, user.getStatus());
+        	ps.setString(2, user.getName());
+        	ps.setString(3, user.getPwd());
+        	ps.setBoolean(4, user.getStatus());
+        	ps.setBoolean(5, user.getBroadcast());
+            ps.setString(6, user.getIpv4());
+            ps.setInt(7, user.getCodenum());
+            ps.setString(8, user.getCodelist());
+            ps.setString(9, user.getGps());
+            ps.setInt(10, user.getCurrgroup());
+            ps.setInt(11, user.getGroupnum());
+            ps.setString(12, user.getGrouplist());
+            ps.setLong(13, user.getThreadid());
             ps.execute();
-            ResultSet rs = ps.getGeneratedKeys();
-            if (rs.next()) {
-                int id = rs.getInt(1);
-                user.setId(id);
+            GroupDAO gdao = new GroupDAO();
+            String[] groups = user.getGrouplist().split("\\|");
+            for(String g:groups){
+            	Group group = gdao.get(Integer.parseInt(g));
+            	group.setUsernum(group.getUsernum()+1);
+            	if(group.getUserlist()!=null)
+            		group.setUserlist(group.getUserlist()+"|"+user.getId()+"."+user.getName());
+            	else
+            		group.setUserlist(user.getId()+"."+user.getName());
+            	gdao.update(group);
             }
+            
         } catch (SQLException e) {
   
             e.printStackTrace();

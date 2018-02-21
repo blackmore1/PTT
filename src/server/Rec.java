@@ -12,6 +12,8 @@ import bean.Group;
 import bean.User;
 import dao.GroupDAO;
 import dao.UserDAO;
+import me.hupeng.ipLocationService.IpLocationResult;
+import me.hupeng.ipLocationService.IpLocationService;
 import struct.JavaStruct;
 import struct.StructException;
 import tool.codec;
@@ -36,10 +38,13 @@ public class Rec implements Runnable {
 	private int id = 0;
 	public Rec(Socket s,Buffer buffer){
 		String ip=s.getInetAddress().getHostAddress();
-		SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss" );
+		SimpleDateFormat sdf =new SimpleDateFormat("MM-dd HH:mm" );
         Date d= new Date();
-        String str = sdf.format(d);
-		System.out.println(ip+"已连接"+str);
+        String date = sdf.format(d);
+        IpLocationService ipLocationService = new IpLocationService();
+        IpLocationResult ipLocationResult = ipLocationService.getIpLocationResult(ip);
+        String address = "("+ipLocationResult.getCountry()+" "+ipLocationResult.getProvince()+" "+ipLocationResult.getCity()+")";
+		System.out.println(ip+address+"已连接"+date);
 		this.s = s;
 		this.buffer = buffer;
 		try {
