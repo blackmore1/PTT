@@ -4,8 +4,8 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="lib" path="E:/eclipse/mysql-connector-java-5.0.8-bin.jar"/>
 	<classpathentry kind="lib" path="C:/Users/blackmore/Desktop/javastruct.jar"/>
-	<classpathentry kind="lib" path="C:/Users/blackmore/Downloads/gson-2.3.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/blackmore/Downloads/ipLocationService.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="C:/Users/blackmore/Desktop/ptt/ptt_lib/ipLocationService.jar"/>
+	<classpathentry kind="lib" path="C:/Users/blackmore/Desktop/ptt/ptt_lib/gson-2.3.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

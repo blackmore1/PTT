@@ -13,7 +13,7 @@ public class User {
 	private int currgroup;
 	private int groupnum;
 	private String grouplist;
-	private long threadid;
+	private long threadid=-1;
 	public long getThreadid() {
 		return threadid;
 	}

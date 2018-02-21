@@ -2,6 +2,8 @@ package test;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,21 +36,41 @@ public class Jtest {
 	//@Test
 	public void adduser() {
 			User user = new User();
-			user.setId(1);
-			user.setName("haha");
-			user.setPwd("12345");
-			user.setCurrgroup(2);
-			user.setGroupnum(3);
-			user.setGrouplist("2|3|4");
+			user.setId(6);
+			user.setName("edge");
+			user.setPwd("54321");
+			user.setCurrgroup(3);
+			user.setGrouplist("3|5");
 			UserDAO userdao = new UserDAO();
 			userdao.add(user);
 	}
 	@Test
-	public void testnull(){
+	public void updategroup() {
+		UserDAO userdao = new UserDAO();
 		GroupDAO groupdao = new GroupDAO();
-		Group group = groupdao.get(4);
-		if(group.getUserlist()!=null)
-		System.out.println(group.getUserlist());
+		Group gnull = new Group();
+		for(int i=1;i<7;i++){
+			gnull.setId(i);
+			groupdao.update(gnull);
+		}
+		List<User> users = userdao.list("select * from user");
+		for(User user:users){
+			String[] groups = user.getGrouplist().split("\\|");
+			for(String groupid:groups){
+				int gid = Integer.parseInt(groupid);
+				Group group = groupdao.get(gid);
+				group.setUsernum(group.getUsernum()+1);
+            	if(group.getUserlist()!=null)
+            		group.setUserlist(group.getUserlist()+"|"+user.getId()+"."+user.getName());
+            	else
+            		group.setUserlist(user.getId()+"."+user.getName());
+            	groupdao.update(group);
+			}
+		}
+	}
+	//@Test
+	public void testnull(){
+		UserDAO userDAO = new UserDAO();
 	}
 
 }

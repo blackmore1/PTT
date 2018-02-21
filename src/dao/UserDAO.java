@@ -31,6 +31,7 @@ public class UserDAO {
   
         String sql = "insert into user values(?,?,?,?,?,?,?,?,?,?,?,?,?)";
         try (Connection c = getConnection(); PreparedStatement ps = c.prepareStatement(sql);) {
+        	String[] groups = user.getGrouplist().split("\\|");
   
         	ps.setInt(1, user.getId());
         	ps.setString(2, user.getName());
@@ -42,12 +43,11 @@ public class UserDAO {
             ps.setString(8, user.getCodelist());
             ps.setString(9, user.getGps());
             ps.setInt(10, user.getCurrgroup());
-            ps.setInt(11, user.getGroupnum());
+            ps.setInt(11, groups.length);
             ps.setString(12, user.getGrouplist());
             ps.setLong(13, user.getThreadid());
             ps.execute();
             GroupDAO gdao = new GroupDAO();
-            String[] groups = user.getGrouplist().split("\\|");
             for(String g:groups){
             	Group group = gdao.get(Integer.parseInt(g));
             	group.setUsernum(group.getUsernum()+1);
@@ -63,6 +63,29 @@ public class UserDAO {
             e.printStackTrace();
         }
     }
+    
+   /* public void updategroup(User user){
+    	String sql = "update user set groupnum=?,grouplist=? where id=?";
+        try (Connection c = getConnection(); PreparedStatement ps = c.prepareStatement(sql);) {
+        	String[] groups = user.getGrouplist().split("\\|");
+        	ps.setInt(1, groups.length);
+        	ps.setString(2, user.getGrouplist());
+        	ps.setInt(3, user.getId());
+        	ps.execute();
+        	GroupDAO gdao = new GroupDAO();
+            for(String g:groups){
+            	Group group = gdao.get(Integer.parseInt(g));
+            	group.setUsernum(group.getUsernum()+1);
+            	if(group.getUserlist()!=null)
+            		group.setUserlist(group.getUserlist()+"|"+user.getId()+"."+user.getName());
+            	else
+            		group.setUserlist(user.getId()+"."+user.getName());
+            	gdao.update(group);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }*/
   
     public void update(User user) {
   
