@@ -317,7 +317,7 @@ public class Rec implements Runnable {
 		if(n==6||n==4)
 			return;
 		String[] gpss = user.getGps().split(" ");
-		codec0c c0c = new codec0c();
+		codec0c c0c = new codec0c(); 
 		c0c.setAltitude(Double.parseDouble(gpss[0])); 
 		c0c.setLongitude(Double.parseDouble(gpss[1])); 
 		ctw0d(JavaStruct.pack(c0c));
@@ -415,22 +415,25 @@ public class Rec implements Runnable {
 	 * */
 	public void ctw21(byte[] content) throws StructException{
 		System.out.println("ctw21申请或取消语音");
+		UserDAO userdao = new UserDAO();
+		User user = userdao.get("select * from user where id ="+id);
+		int gid = user.getCurrgroup();
 		codec21 c21 = new codec21();
 		if(content[0]==0x01){
-			if(buffer.isStatus()){
+			if(buffer.isStatus(gid-1)){
 				c21.setResult((byte) 0x01);
-				c21.setId((short) buffer.getId());;
+				c21.setId((short) buffer.getId());
 			}
 			else{
-				buffer.setStatus(true);
+				buffer.setStatus(true,gid-1);
 				buffer.setId(id);
 				c21.setResult((byte) 0x00);
 				c21.setId((short) id);
 			}
 		}
 		else{
-			if(buffer.isStatus()&&buffer.getId()==id){
-				buffer.setStatus(false);
+			if(buffer.isStatus(gid-1)&&buffer.getId()==id){
+				buffer.setStatus(false,gid-1);
 			}
 			c21.setResult((byte) 0x00);
 			c21.setId((short) id);

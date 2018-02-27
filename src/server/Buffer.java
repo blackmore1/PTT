@@ -7,7 +7,7 @@ import java.util.LinkedList;
 public class Buffer {
 	private HashMap<Long,Socket> sockets = new HashMap<>();
 	private LinkedList<Byte> list = new LinkedList<Byte>();
-	private boolean status = false;
+	private boolean[] status = new boolean[7];//默认为false
 	private int id;
 	
 	public synchronized void addList(byte id, byte[] buf){
@@ -38,12 +38,12 @@ public class Buffer {
 		sockets.remove(id);
 	}
 	
-	public synchronized boolean isStatus() {
-		return status;
+	public synchronized boolean isStatus(int gid) {
+		return status[gid];
 	}
 
-	public synchronized void setStatus(boolean status) {
-		this.status = status;
+	public synchronized void setStatus(boolean status,int gid) {
+		this.status[gid] = status;
 	}
 
 	public synchronized int getId() {
