@@ -55,7 +55,7 @@ public class Rec implements Runnable {
 		while(true){
 			int readChannels;
 			try {
-				readChannels = selector.select();
+				readChannels = selector.selectNow();
 				if(readChannels == 0) continue;
 			} catch (IOException e2) {
 				e2.printStackTrace();
@@ -530,7 +530,7 @@ public class Rec implements Runnable {
 		user.setStatus(false);
 		user.setMark(null);
 		userdao.update(user);
-		buffer.delSocketChannel(Thread.currentThread().getId());
+		buffer.delSocketChannel(id);
 		//下线通知
 		ctw0b(user,4);
 	}
