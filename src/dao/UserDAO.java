@@ -45,7 +45,7 @@ public class UserDAO {
             ps.setInt(10, user.getCurrgroup());
             ps.setInt(11, groups.length);
             ps.setString(12, user.getGrouplist());
-            ps.setLong(13, user.getThreadid());
+            ps.setString(13, user.getMark());
             ps.execute();
             GroupDAO gdao = new GroupDAO();
             for(String g:groups){
@@ -90,7 +90,7 @@ public class UserDAO {
     public void update(User user) {
   
         String sql = "update user set status = ?,broadcast = ?,ipv4 = ?,codenum = ?,codelist = ?,gps = ?,currgroup = ?,groupnum = ?,"
-        		+ "grouplist = ?,threadid = ? where id = ?";
+        		+ "grouplist = ?,mark = ? where id = ?";
         try (Connection c = getConnection(); PreparedStatement ps = c.prepareStatement(sql);) {
   
         	ps.setBoolean(1, user.getStatus());
@@ -102,7 +102,7 @@ public class UserDAO {
             ps.setInt(7, user.getCurrgroup());
             ps.setInt(8, user.getGroupnum());
             ps.setString(9, user.getGrouplist());
-            ps.setLong(10, user.getThreadid());
+            ps.setString(10, user.getMark());
             ps.setInt(11, user.getId());
   
             ps.execute();
@@ -135,7 +135,7 @@ public class UserDAO {
                 int currgroup = rs.getInt(10);
                 int groupnum = rs.getInt(11);
                 String grouplist = rs.getString(12);
-                long threadid = rs.getLong(13);
+                String mark = rs.getString(13);
                 user.setId(id);
                 user.setName(name);
                 user.setPwd(password);
@@ -147,7 +147,7 @@ public class UserDAO {
                 user.setGps(gps);
                 user.setCurrgroup(currgroup);
                 user.setGroupnum(groupnum);
-                user.setThreadid(threadid);
+                user.setMark(mark);
                 user.setGrouplist(grouplist);
             }
   
@@ -156,6 +156,83 @@ public class UserDAO {
             e.printStackTrace();
         }
         return user;
+    }
+    public User getbyid(int id) {
+    	User user= null;
+    	
+    	try (Connection c = getConnection(); Statement s = c.createStatement();) {
+    		String sql = "select * from user where id ="+id;
+    		ResultSet rs = s.executeQuery(sql);
+    		
+    		if (rs.next()) {
+    			user = new User();
+//    			int id = rs.getInt(1);
+    			String name = rs.getString(2);
+    			String password = rs.getString(3);
+    			boolean status = rs.getBoolean(4);
+    			boolean broadcast = rs.getBoolean(5);
+    			String ipv4 = rs.getString(6);
+    			int codenum = rs.getInt(7);
+    			String codelist = rs.getString(8);
+    			String gps = rs.getString(9);
+    			int currgroup = rs.getInt(10);
+    			int groupnum = rs.getInt(11);
+    			String grouplist = rs.getString(12);
+    			String mark = rs.getString(13);
+    			user.setId(id);
+    			user.setName(name);
+    			user.setPwd(password);
+    			user.setStatus(status);
+    			user.setBroadcast(broadcast);
+    			user.setIpv4(ipv4);
+    			user.setCodenum(codenum);
+    			user.setCodelist(codelist);
+    			user.setGps(gps);
+    			user.setCurrgroup(currgroup);
+    			user.setGroupnum(groupnum);
+    			user.setMark(mark);
+    			user.setGrouplist(grouplist);
+    		}
+    		
+    	} catch (SQLException e) {
+    		
+    		e.printStackTrace();
+    	}
+    	return user;
+    }
+    public int getidbymark(String mark) {
+    	int id= 0;
+    	
+    	try (Connection c = getConnection(); Statement s = c.createStatement();) {
+    		String sql = "select id from user where mark ='"+mark+"'";
+    		ResultSet rs = s.executeQuery(sql);
+    		
+    		if (rs.next()) {
+    			id = rs.getInt(1);
+    		}
+    		
+    	} catch (SQLException e) {
+    		
+    		e.printStackTrace();
+    	}
+    	return id;
+    }
+    public String getmarkbyid(int id) {
+    	String mark= null;
+    	
+    	try (Connection c = getConnection(); Statement s = c.createStatement();) {
+    		String sql = "select mark from user where id ="+id;
+    		ResultSet rs = s.executeQuery(sql);
+    		
+    		if (rs.next()) {
+    			mark = rs.getString(1);
+    		}
+    		
+    	} catch (SQLException e) {
+    		
+    		e.printStackTrace();
+    	}
+    	return mark;
     }
   
     public List<User> list(String sql) {
@@ -181,7 +258,7 @@ public class UserDAO {
                 int currgroup = rs.getInt(10);
                 int groupnum = rs.getInt(11);
                 String grouplist = rs.getString(12);
-                long threadid = rs.getLong(13);
+                String mark = rs.getString(13);
                 user.setId(id);
                 user.setName(name);
                 user.setPwd(password);
@@ -194,7 +271,7 @@ public class UserDAO {
                 user.setCurrgroup(currgroup);
                 user.setGroupnum(groupnum);
                 user.setGrouplist(grouplist);
-                user.setThreadid(threadid);
+                user.setMark(mark);
                 users.add(user);
             }
             
@@ -203,6 +280,52 @@ public class UserDAO {
             e.printStackTrace();
         }
         return users;
+    }
+    public List<User> listbybroad(int groupid) {
+    	List<User> users = new ArrayList<User>();
+        String sql = "select * from user where broadcast = 1 and currgroup = "+groupid;
+    	
+    	try (Connection c = getConnection();Statement s=c.createStatement();) {
+    		
+    		ResultSet rs = s.executeQuery(sql);
+    		//sql="alter table user AUTO_INCREMENT = "+(new UserDAO().getTotal()+1);
+    		//s.execute(sql);
+    		while (rs.next()) {
+    			User user = new User();
+    			int id = rs.getInt(1);
+    			String name = rs.getString(2);
+    			String password = rs.getString(3);
+    			boolean status = rs.getBoolean(4);
+    			boolean broadcast = rs.getBoolean(5);
+    			String ipv4 = rs.getString(6);
+    			int codenum = rs.getInt(7);
+    			String codelist = rs.getString(8);
+    			String gps = rs.getString(9);
+    			int currgroup = rs.getInt(10);
+    			int groupnum = rs.getInt(11);
+    			String grouplist = rs.getString(12);
+    			String mark = rs.getString(13);
+    			user.setId(id);
+    			user.setName(name);
+    			user.setPwd(password);
+    			user.setStatus(status);
+    			user.setBroadcast(broadcast);
+    			user.setIpv4(ipv4);
+    			user.setCodenum(codenum);
+    			user.setCodelist(codelist);
+    			user.setGps(gps);
+    			user.setCurrgroup(currgroup);
+    			user.setGroupnum(groupnum);
+    			user.setGrouplist(grouplist);
+    			user.setMark(mark);
+    			users.add(user);
+    		}
+    		
+    	} catch (SQLException e) {
+    		
+    		e.printStackTrace();
+    	}
+    	return users;
     }
   
 }

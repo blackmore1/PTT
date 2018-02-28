@@ -13,12 +13,12 @@ public class User {
 	private int currgroup;
 	private int groupnum;
 	private String grouplist;
-	private long threadid=-1;
-	public long getThreadid() {
-		return threadid;
+	private String mark;
+	public String getMark() {
+		return mark;
 	}
-	public void setThreadid(long threadid) {
-		this.threadid = threadid;
+	public void setMark(String mark) {
+		this.mark = mark;
 	}
 	public boolean getBroadcast() {
 		return broadcast;

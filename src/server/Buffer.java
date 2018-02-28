@@ -1,14 +1,13 @@
 package server;
 
-import java.net.Socket;
+import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.LinkedList;
 
 public class Buffer {
-	private HashMap<Long,Socket> sockets = new HashMap<>();
+	private HashMap<Integer,SocketChannel> sockets = new HashMap<>();
 	private LinkedList<Byte> list = new LinkedList<Byte>();
-	private boolean[] status = new boolean[7];//默认为false
-	private int id;
+	private int[] status = new int[7];//默认为false
 	
 	public synchronized void addList(byte id, byte[] buf){
 		list.add(id);
@@ -26,32 +25,24 @@ public class Buffer {
 		return b;
 	}
 	
-	public synchronized void addSocket(long l,Socket s){
-		sockets.put(l, s);
+	public synchronized void addSocketChannel(Integer id,SocketChannel s){
+		sockets.put(id, s);
 	}
 	
-	public synchronized Socket getSocket(long id){
+	public synchronized SocketChannel getSocketChannel(Integer id){
 		return sockets.get(id);
 	}
 	
-	public synchronized void delSocket(long id){
+	public synchronized void delSocketChannel(long id){
 		sockets.remove(id);
 	}
 	
-	public synchronized boolean isStatus(int gid) {
+	public synchronized int getStatus(int gid) {
 		return status[gid];
 	}
 
-	public synchronized void setStatus(boolean status,int gid) {
-		this.status[gid] = status;
-	}
-
-	public synchronized int getId() {
-		return id;
-	}
-
-	public synchronized void setId(int id) {
-		this.id = id;
+	public synchronized void setStatus(int id,int gid) {
+		this.status[gid] = id;
 	}
 
 	public synchronized boolean isEmpty(){

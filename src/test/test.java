@@ -71,8 +71,10 @@ public class test {
     }  
       
     public static void main(String args[]) throws StructException, IOException {  
-    	byte[] data = {0x00,0x0a,(byte) 0xaa,0x55,0x10,0x05,0x00,0x00,0x00,0x01};
-    	boolean[] status = new boolean[7];
-    	System.out.println(status[0]);
+    	byte[] data = {0x00,0x0a,(byte) 0xaa,0x55,0x10,0x22,0x00,0x00,0x00,0x01};
+    	String str = new String(data);
+    	System.out.println(str);
+    	byte[] buf = "�U\"".getBytes();
+    	tools.printArray(buf);
     }  
 } 

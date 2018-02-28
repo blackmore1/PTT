@@ -2,28 +2,31 @@ package server;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.net.InetSocketAddress;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 
 public class Server {
 
-	@SuppressWarnings("resource")
 	public static void main(String[] args) throws IOException {
-		SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss" );
-        Date d= new Date();
-        String str = sdf.format(d);
-		ServerSocket ss=new ServerSocket(3328);
-		System.out.println(InetAddress.getLocalHost().getHostAddress()+str);
+        System.out.println(InetAddress.getLocalHost().getHostAddress());
+        ServerSocketChannel ss = ServerSocketChannel.open();
+		ss.socket().bind(new InetSocketAddress(3328));
+		ss.configureBlocking(false);
+		SocketChannel s = null;
+		boolean flag = true;
 		Buffer buffer = new Buffer();
 		new Thread(new Send(buffer)).start();
+		Rec r = new Rec(buffer);
 		while(true){
-			//System.out.println(1);
-			Socket s=ss.accept();
-			new Thread(new Rec(s,buffer)).start();
-		}
-		//ss.close();
+			s = ss.accept();
+			if(s!=null)
+				r.add(s);
+			if(flag&&s!=null){
+				new Thread(r).start();
+				flag = false;
+			}
+		}	
 	}
 
 }

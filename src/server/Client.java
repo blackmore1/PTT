@@ -19,7 +19,7 @@ public class Client {
 		codec04 c04 = new codec04();
 		byte[] ip = {(byte) 192,(byte) 168,1,106};
 		c04.setName(tools.str2Bytes("zhangsan",32));
-		c04.setPwd(tools.str2Bytes("12345",32));
+		c04.setPwd(tools.str2Bytes("1111",32));
 		c04.setCodenum((byte) 2);
 		c04.setCodelist(new byte[2]);
 		c04.setPrefix((byte) 24);
@@ -29,7 +29,7 @@ public class Client {
 		c.setCtw((byte) 0x04);
 		byte[] b = JavaStruct.pack(c);
 		System.out.println(b.length);
-		Socket socket=new Socket("198.35.45.72",3328);//198.35.45.72
+		Socket socket=new Socket("223.3.114.62",3328);//198.35.45.72
 		OutputStream out=socket.getOutputStream();
 		InputStream in = socket.getInputStream();
 			out.write(b);
