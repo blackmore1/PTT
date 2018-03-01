@@ -162,9 +162,9 @@ public class Admin implements Runnable {
 					return;
 				}
 				SocketChannel s = buffer.getSocketChannel(id);
+				new Rec(buffer).close(id);
 				if(s!=null){
 					s.close();
-					new Rec(buffer).close(id);
 				}
 			}
 		}catch(InputMismatchException | IOException | StructException e){
