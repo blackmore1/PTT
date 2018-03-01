@@ -9,10 +9,13 @@ import java.io.OutputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Deque;
+import java.util.InputMismatchException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 
 import bean.Group;
 import bean.User;
@@ -72,9 +75,12 @@ public class test {
       
     public static void main(String args[]) throws StructException, IOException {  
     	byte[] data = {0x00,0x0a,(byte) 0xaa,0x55,0x10,0x22,0x00,0x00,0x00,0x01};
-    	String str = new String(data);
-    	System.out.println(str);
-    	byte[] buf = "�U\"".getBytes();
-    	tools.printArray(buf);
+    	Scanner sc = new Scanner(System.in); 
+    	System.out.println("请输入你的姓名："); 
+    	try{
+    	int name = sc.nextInt(); 
+    	}catch(InputMismatchException e){
+    		System.out.println(1);
+    	}
     }  
 } 

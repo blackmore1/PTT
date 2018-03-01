@@ -33,7 +33,7 @@ public class UserDAO {
         try (Connection c = getConnection(); PreparedStatement ps = c.prepareStatement(sql);) {
         	String[] groups = user.getGrouplist().split("\\|");
   
-        	ps.setInt(1, user.getId());
+        	ps.setString(1, null);
         	ps.setString(2, user.getName());
         	ps.setString(3, user.getPwd());
         	ps.setBoolean(4, user.getStatus());
@@ -156,6 +156,16 @@ public class UserDAO {
             e.printStackTrace();
         }
         return user;
+    }
+    public void delete(int id) {
+    	
+    	String sql = "delete from user where id ="+id;
+    	try (Connection c = getConnection(); PreparedStatement ps = c.prepareStatement(sql);) {
+            ps.execute();
+        } catch (SQLException e) {
+  
+            e.printStackTrace();
+        }
     }
     public User getbyid(int id) {
     	User user= null;

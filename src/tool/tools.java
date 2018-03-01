@@ -1,5 +1,6 @@
 package tool;
 
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,4 +69,15 @@ public class tools {
 		}
 		return userlist;
 	}
+	public static boolean isRepeat(int[] array) {
+        HashSet<Integer> hashSet = new HashSet<Integer>();
+        for (int i = 0; i < array.length; i++) {
+            hashSet.add(array[i]);
+        }
+        if (hashSet.size() == array.length) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }

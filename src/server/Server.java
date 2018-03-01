@@ -17,6 +17,7 @@ public class Server {
 		boolean flag = true;
 		Buffer buffer = new Buffer();
 		new Thread(new Send(buffer)).start();
+		new Thread(new Admin(buffer)).start();
 		Rec r = new Rec(buffer);
 		while(true){
 			s = ss.accept();

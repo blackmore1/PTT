@@ -33,18 +33,18 @@ public class Jtest {
 		this.b = JavaStruct.pack(c);
 	}
 
-	//@Test
+	@Test
 	public void adduser() {
 			User user = new User();
-			user.setId(6);
-			user.setName("edge");
+//			user.setId(6);
+			user.setName("ede");
 			user.setPwd("54321");
 			user.setCurrgroup(3);
 			user.setGrouplist("3|5");
 			UserDAO userdao = new UserDAO();
 			userdao.add(user);
 	}
-	@Test
+	//@Test
 	public void updategroup() {
 		UserDAO userdao = new UserDAO();
 		GroupDAO groupdao = new GroupDAO();

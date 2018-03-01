@@ -33,7 +33,7 @@ public class Buffer {
 		return sockets.get(id);
 	}
 	
-	public synchronized void delSocketChannel(long id){
+	public synchronized void delSocketChannel(int id){
 		sockets.remove(id);
 	}
 	

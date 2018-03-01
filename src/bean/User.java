@@ -96,7 +96,7 @@ public class User {
 	public String toString() {
 		return "User [id=" + id + ", name=" + name + ", pwd=" + pwd + ", status=" + status + ", broadcast=" + broadcast
 				+ ", ipv4=" + ipv4 + ", codenum=" + codenum + ", codelist=" + codelist + ", gps=" + gps + ", currgroup="
-				+ currgroup + ", groupnum=" + groupnum + ", grouplist=" + grouplist + "]";
+				+ currgroup + ", groupnum=" + groupnum + ", grouplist=" + grouplist + ", mark=" + mark + "]";
 	}
 
 }

@@ -23,6 +23,7 @@ public class Send implements Runnable {
 					byte[] idata = buffer.getList();
 					int id = idata[0]&0x0ff;
 					SocketChannel s = buffer.getSocketChannel(id);
+					if(s==null)	continue;
 					ByteBuffer byteBuffer = ByteBuffer.allocate(idata.length-1);
 			        byteBuffer.put(Arrays.copyOfRange(idata, 1, idata.length));
 			        byteBuffer.flip();

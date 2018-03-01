@@ -6,6 +6,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -42,10 +43,11 @@ public class Rec implements Runnable {
 	}
 	public synchronized void add(SocketChannel s) throws IOException{
 		String ip=s.getRemoteAddress().toString();
-		System.out.println(ip+"已连接");
+		Date nowTime = new Date();  
+		System.out.println(ip+"已连接"+nowTime);
 		try {
 			s.configureBlocking(false);
-			s.register(selector, SelectionKey.OP_READ);
+			s.register(selector, SelectionKey.OP_READ|SelectionKey.OP_CONNECT);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -74,6 +76,9 @@ public class Rec implements Runnable {
 						tools.printArray(data);
 						nianbao(data);
 					}
+					if(key.isConnectable()){
+						System.out.println("kelianjie");
+					}
 					it.remove();
 				}
 			} catch (IOException | StructException e) {
@@ -81,15 +86,14 @@ public class Rec implements Runnable {
 	            //所以从Selector中取消该SelectionKey的注册
 				UserDAO userdao= new UserDAO();
 	            key.cancel();
-	            if (key.channel() != null) {
-	                try {
-	                	id = userdao.getidbymark(s.getRemoteAddress().toString());
-	                	close();
-						key.channel().close();
-					} catch (IOException | StructException e1) {
-						e1.printStackTrace();
-					}
-	            }
+	            System.out.println("关闭");
+                try {
+                	id = userdao.getidbymark(s.getRemoteAddress().toString());
+                	close(id);
+                	s.close();
+				} catch (IOException | StructException e1) {
+					e1.printStackTrace();
+				}
 				e.printStackTrace();
 			}
 		}
@@ -498,8 +502,9 @@ public class Rec implements Runnable {
 	/**
 	 * 用户下线
 	 * @throws StructException 
+	 * @throws IOException 
 	 * */
-	public void close() throws StructException{
+	public void close(int id) throws StructException, IOException{
 		System.out.println("准备断开");
 		System.out.println("线程数："+Thread.activeCount());
 		UserDAO userdao = new UserDAO();
