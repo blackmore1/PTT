@@ -73,7 +73,7 @@ public class Admin implements Runnable {
 				for(User user:users)
 					System.out.println(user);
 			}
-			else if(order==4){
+			else if(order==4){ 
 				System.out.print("输入用户id:");
 				int id = sc.nextInt();
 				User user = userdao.getbyid(id);
@@ -150,7 +150,7 @@ public class Admin implements Runnable {
 		try{
 			int order = sc.nextInt();
 			if(order==1){
-				System.out.println("输入用户id");
+				System.out.println("输入用户id:");
 				int id = sc.nextInt();
 				User user = userdao.getbyid(id);
 				if(user==null){
