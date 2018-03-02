@@ -29,7 +29,7 @@ public class Client {
 		c.setCtw((byte) 0x04);
 		byte[] b = JavaStruct.pack(c);
 		System.out.println(b.length);
-		Socket socket=new Socket("223.3.114.60",3328);//198.35.45.72
+		Socket socket=new Socket("223.3.101.112",3328);//198.35.45.72
 		OutputStream out=socket.getOutputStream();
 		InputStream in = socket.getInputStream();
 			out.write(b);

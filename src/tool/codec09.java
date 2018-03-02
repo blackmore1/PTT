@@ -25,10 +25,10 @@ public class codec09 {
 	@StructField(order = 5)
 	private byte[] userlist;
 	
-	public codec09(Group group,boolean broadcast){
+	public codec09(Group group,boolean broadcast,boolean interrupt){
 		this.groupid = (short) group.getId();
 		this.broadcast = broadcast;
-		this.interrupt = false;
+		this.interrupt = interrupt;
 		this.usernum = (byte) group.getUsernum();
 		this.description = tools.str2Bytes(group.getDescription(), 32);
 		this.userlist = tools.getUserlist(group.getUserlist());

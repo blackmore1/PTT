@@ -10,7 +10,11 @@ import bean.Group;
 import bean.User;
 import dao.GroupDAO;
 import dao.UserDAO;
+import struct.JavaStruct;
 import struct.StructException;
+import tool.codec;
+import tool.codec09;
+import tool.codec0b;
 import tool.tools;
 
 public class Admin implements Runnable {
@@ -52,6 +56,7 @@ public class Admin implements Runnable {
 	
 	public void userInfo(){
 		UserDAO userdao = new UserDAO();
+		GroupDAO groupdao = new GroupDAO();
 		Scanner sc = new Scanner(System.in); 
 		System.out.println("输入指令：(1:所有用户;2:在线用户;3:某一群组用户;4:某一用户)");
 		try{
@@ -69,9 +74,13 @@ public class Admin implements Runnable {
 			else if(order==3){
 				System.out.print("输入群组id:");
 				int gid = sc.nextInt();
-				List<User> users = userdao.list("select * from user where currgroup="+gid);
-				for(User user:users)
-					System.out.println(user);
+				Group group = groupdao.get(gid);
+				String[] users = group.getUserlist().split("\\|");
+				for(String user:users){
+					String[] s = user.split("\\.");
+					int id = Integer.parseInt(s[0]);
+					System.out.println(userdao.getbyid(id));
+				}
 			}
 			else if(order==4){ 
 				System.out.print("输入用户id:");
@@ -100,7 +109,7 @@ public class Admin implements Runnable {
 			}
 			System.out.print("输入密码：");
 			String pwd = sc.nextLine();
-			System.out.print("输入用户所在群组：");
+			System.out.printf("输入用户所在群组(最大群组为%d)：",total);
 			String grouplist = sc.nextLine();
 			String[] groups = grouplist.split("\\|");
 			int[] gid = new int[groups.length];
@@ -120,7 +129,24 @@ public class Admin implements Runnable {
 			user.setCurrgroup(gid[0]);
 			user.setGrouplist(grouplist);
 			userdao.add(user);
-		}catch(NumberFormatException e){
+			user = userdao.get("select * from user where name = '"+name.trim()+"'");
+			//向所有用户发送通知
+			for(int groupid:gid){
+				codec0b c0b = new codec0b();
+				c0b.setMark((byte) 3);
+				c0b.setUsernum((byte) 1);
+				c0b.setGroupid((short) groupid);
+				byte[] userlist = tools.concat(tools.int2Bytes(user.getId(), 2), tools.str2Bytes(user.getName(), 16));
+				c0b.setUserlist(userlist);
+				codec c = new codec(JavaStruct.pack(c0b));
+				c.setCtw((byte) 0x0b);
+				byte[] data = JavaStruct.pack(c);
+				List<User> users = userdao.list("select * from user where broadcast = 1 and currgroup = "+groupid);
+				for(User u:users){
+					buffer.addList((byte) u.getId(), data);
+				}
+			}
+		}catch(NumberFormatException | StructException e){
 			System.out.println("格式错误");
 		}
 	}
@@ -145,8 +171,9 @@ public class Admin implements Runnable {
 	
 	public void permission(){
 		UserDAO userdao = new UserDAO();
+		GroupDAO groupdao = new GroupDAO();
 		Scanner sc = new Scanner(System.in); 
-		System.out.println("输入指令：(1:强迫下线;)");
+		System.out.println("输入指令：(1:强迫下线;2:变更插话权限)");
 		try{
 			int order = sc.nextInt();
 			if(order==1){
@@ -166,6 +193,25 @@ public class Admin implements Runnable {
 				if(s!=null){
 					s.close();
 				}
+			}
+			else if(order == 2){
+				System.out.println("输入用户id:");
+				int id = sc.nextInt();
+				User user = userdao.getbyid(id);
+				if(user==null){
+					System.out.println("用户不存在");
+					return;
+				}
+				user.setInterrupt(!user.getInterrupt());
+				userdao.update(user);
+				Group group = groupdao.get(user.getCurrgroup());
+				group.setUsernum(0);
+				group.setUserlist("");
+				codec09 c09 = new codec09(group, user.getBroadcast(),user.getInterrupt());
+				codec c = new codec(JavaStruct.pack(c09));
+				c.setCtw((byte) 0x09);
+				byte[] data = JavaStruct.pack(c);
+				buffer.addList((byte) id, data);
 			}
 		}catch(InputMismatchException | IOException | StructException e){
 			System.out.println("输入错误");

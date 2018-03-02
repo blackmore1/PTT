@@ -29,7 +29,7 @@ public class UserDAO {
   
     public void add(User user) {
   
-        String sql = "insert into user values(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        String sql = "insert into user values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         try (Connection c = getConnection(); PreparedStatement ps = c.prepareStatement(sql);) {
         	String[] groups = user.getGrouplist().split("\\|");
   
@@ -46,7 +46,9 @@ public class UserDAO {
             ps.setInt(11, groups.length);
             ps.setString(12, user.getGrouplist());
             ps.setString(13, user.getMark());
+            ps.setBoolean(14, user.getInterrupt());
             ps.execute();
+            user=get("select * from user where name = '"+user.getName().trim()+"'");
             GroupDAO gdao = new GroupDAO();
             for(String g:groups){
             	Group group = gdao.get(Integer.parseInt(g));
@@ -64,33 +66,10 @@ public class UserDAO {
         }
     }
     
-   /* public void updategroup(User user){
-    	String sql = "update user set groupnum=?,grouplist=? where id=?";
-        try (Connection c = getConnection(); PreparedStatement ps = c.prepareStatement(sql);) {
-        	String[] groups = user.getGrouplist().split("\\|");
-        	ps.setInt(1, groups.length);
-        	ps.setString(2, user.getGrouplist());
-        	ps.setInt(3, user.getId());
-        	ps.execute();
-        	GroupDAO gdao = new GroupDAO();
-            for(String g:groups){
-            	Group group = gdao.get(Integer.parseInt(g));
-            	group.setUsernum(group.getUsernum()+1);
-            	if(group.getUserlist()!=null)
-            		group.setUserlist(group.getUserlist()+"|"+user.getId()+"."+user.getName());
-            	else
-            		group.setUserlist(user.getId()+"."+user.getName());
-            	gdao.update(group);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }*/
-  
     public void update(User user) {
   
         String sql = "update user set status = ?,broadcast = ?,ipv4 = ?,codenum = ?,codelist = ?,gps = ?,currgroup = ?,groupnum = ?,"
-        		+ "grouplist = ?,mark = ? where id = ?";
+        		+ "grouplist = ?,mark = ?,interrupt = ? where id = ?";
         try (Connection c = getConnection(); PreparedStatement ps = c.prepareStatement(sql);) {
   
         	ps.setBoolean(1, user.getStatus());
@@ -103,7 +82,8 @@ public class UserDAO {
             ps.setInt(8, user.getGroupnum());
             ps.setString(9, user.getGrouplist());
             ps.setString(10, user.getMark());
-            ps.setInt(11, user.getId());
+            ps.setBoolean(11, user.getInterrupt());
+            ps.setInt(12, user.getId());
   
             ps.execute();
   
@@ -136,6 +116,7 @@ public class UserDAO {
                 int groupnum = rs.getInt(11);
                 String grouplist = rs.getString(12);
                 String mark = rs.getString(13);
+                boolean interrupt = rs.getBoolean(14);
                 user.setId(id);
                 user.setName(name);
                 user.setPwd(password);
@@ -149,6 +130,7 @@ public class UserDAO {
                 user.setGroupnum(groupnum);
                 user.setMark(mark);
                 user.setGrouplist(grouplist);
+                user.setInterrupt(interrupt);
             }
   
         } catch (SQLException e) {
@@ -161,6 +143,22 @@ public class UserDAO {
     	
     	String sql = "delete from user where id ="+id;
     	try (Connection c = getConnection(); PreparedStatement ps = c.prepareStatement(sql);) {
+    		User user = getbyid(id);
+    		if(user==null) return;
+    		GroupDAO groupdao = new GroupDAO();
+    		String[] groups = user.getGrouplist().split("\\|");
+    		for(String g:groups){
+    			int gid = Integer.parseInt(g);
+    			Group group = groupdao.get(gid);
+    			if(group.getUserlist().startsWith(user.getId()+"."+user.getName())){
+    				group.setUserlist(group.getUserlist().replace(user.getId()+"."+user.getName(), ""));
+    			}
+    			else{
+    				group.setUserlist(group.getUserlist().replace("|"+user.getId()+"."+user.getName(), ""));
+    			}
+    			group.setUsernum(group.getUsernum()-1);
+    			groupdao.update(group);
+    		}
             ps.execute();
         } catch (SQLException e) {
   
@@ -189,6 +187,7 @@ public class UserDAO {
     			int groupnum = rs.getInt(11);
     			String grouplist = rs.getString(12);
     			String mark = rs.getString(13);
+    			boolean interrupt = rs.getBoolean(14);
     			user.setId(id);
     			user.setName(name);
     			user.setPwd(password);
@@ -202,6 +201,7 @@ public class UserDAO {
     			user.setGroupnum(groupnum);
     			user.setMark(mark);
     			user.setGrouplist(grouplist);
+    			user.setInterrupt(interrupt);
     		}
     		
     	} catch (SQLException e) {
@@ -269,6 +269,7 @@ public class UserDAO {
                 int groupnum = rs.getInt(11);
                 String grouplist = rs.getString(12);
                 String mark = rs.getString(13);
+                boolean interrupt = rs.getBoolean(14);
                 user.setId(id);
                 user.setName(name);
                 user.setPwd(password);
@@ -282,6 +283,7 @@ public class UserDAO {
                 user.setGroupnum(groupnum);
                 user.setGrouplist(grouplist);
                 user.setMark(mark);
+                user.setInterrupt(interrupt);
                 users.add(user);
             }
             
@@ -315,6 +317,7 @@ public class UserDAO {
     			int groupnum = rs.getInt(11);
     			String grouplist = rs.getString(12);
     			String mark = rs.getString(13);
+    			boolean interrupt = rs.getBoolean(14);
     			user.setId(id);
     			user.setName(name);
     			user.setPwd(password);
@@ -328,6 +331,7 @@ public class UserDAO {
     			user.setGroupnum(groupnum);
     			user.setGrouplist(grouplist);
     			user.setMark(mark);
+    			user.setInterrupt(interrupt);
     			users.add(user);
     		}
     		

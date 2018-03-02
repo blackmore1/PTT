@@ -14,6 +14,13 @@ public class User {
 	private int groupnum;
 	private String grouplist;
 	private String mark;
+	private boolean interrupt;
+	public boolean getInterrupt() {
+		return interrupt;
+	}
+	public void setInterrupt(boolean interrupt) {
+		this.interrupt = interrupt;
+	}
 	public String getMark() {
 		return mark;
 	}

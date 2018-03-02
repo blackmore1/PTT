@@ -75,12 +75,7 @@ public class test {
       
     public static void main(String args[]) throws StructException, IOException {  
     	byte[] data = {0x00,0x0a,(byte) 0xaa,0x55,0x10,0x22,0x00,0x00,0x00,0x01};
-    	Scanner sc = new Scanner(System.in); 
-    	System.out.println("请输入你的姓名："); 
-    	try{
-    	int name = sc.nextInt(); 
-    	}catch(InputMismatchException e){
-    		System.out.println(1);
-    	}
+    	byte[] b = tools.int2Bytes(0, 2);
+    	tools.printArray(b);
     }  
 } 

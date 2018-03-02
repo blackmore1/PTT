@@ -282,7 +282,7 @@ public class Rec implements Runnable {
 			user.setBroadcast(true);
 			userdao.update(user);
 		}
-		codec09 c09 = new codec09(curr,broadcast);
+		codec09 c09 = new codec09(curr,broadcast,user.getInterrupt());
 		codec c = new codec(JavaStruct.pack(c09));
 		c.setCtw((byte) 0x09);
 		byte[] data = JavaStruct.pack(c);
@@ -292,7 +292,7 @@ public class Rec implements Runnable {
 			int gid = Integer.parseInt(str);
 			if(gid!=user.getCurrgroup()){
 				Group group = groupdao.get(gid);
-				c09 = new codec09(group, false);
+				c09 = new codec09(group, false,user.getInterrupt());
 				c = new codec(JavaStruct.pack(c09));
 				c.setCtw((byte) 0x09);
 				data = JavaStruct.pack(c);
@@ -304,8 +304,8 @@ public class Rec implements Runnable {
 	
 	/**
 	 * 群组更新消息
-	 * 3:新上线用户，需要向该用户发送所有群组激活用户，向当前群组其它用户发送上线通知
-	 * 4:下线通知  6:取消激活通知，都不用转发GPS
+	 * 3:新上线用户，需要向该用户发送所有群组激活用户，向当前群组其它用户发送激活通知
+	 * 4:下线通知  ，都不用转发GPS
 	 * 5：激活通知 
 	 * */
 	public void ctw0b(User user,int n) throws StructException{
@@ -332,6 +332,7 @@ public class Rec implements Runnable {
 				byte[] data = JavaStruct.pack(c);
 				buffer.addList((byte)id, data);
 			}
+			n=5;
 		}
 		codec0b c0b = new codec0b();
 		c0b.setMark((byte) n);
@@ -345,7 +346,7 @@ public class Rec implements Runnable {
 		for(User u:users){
 			buffer.addList((byte) u.getId(), data);
 		}
-		if(n==6||n==4)
+		if(n==4)
 			return;
 		String[] gpss = user.getGps().split(" ");
 		codec0c c0c = new codec0c(); 
@@ -399,7 +400,7 @@ public class Rec implements Runnable {
 				Group group = groupdao.get(u.getCurrgroup());
 				group.setUsernum(0);
 				group.setUserlist("");
-				codec09 c09 = new codec09(group, broadcast);
+				codec09 c09 = new codec09(group, broadcast,u.getInterrupt());
 				codec c = new codec(JavaStruct.pack(c09));
 				c.setCtw((byte) 0x09);
 				byte[] data = JavaStruct.pack(c);
@@ -426,7 +427,7 @@ public class Rec implements Runnable {
 		user.setBroadcast(broadcast);
 		userdao.update(user);
 		Group group = groupdao.get(user.getCurrgroup());
-		codec09 c09 = new codec09(group, broadcast);
+		codec09 c09 = new codec09(group, broadcast,user.getInterrupt());
 		c09.setUsernum((byte) 0);
 		c09.setUserlist(new byte[0]);
 		c = new codec(JavaStruct.pack(c09));
@@ -437,7 +438,7 @@ public class Rec implements Runnable {
 		ctw0b(user,5);
 		user.setCurrgroup((content[2]&0x0ff)<<8|content[3]&0x0ff);
 		//向旧群组用户发送0x0B
-		ctw0b(user,6);
+		ctw0b(user,4);
 	}
 	
 	/**
@@ -523,7 +524,7 @@ public class Rec implements Runnable {
 				Group group = groupdao.get(u.getCurrgroup());
 				group.setUsernum(0);
 				group.setUserlist("");
-				codec09 c09 = new codec09(group, true);
+				codec09 c09 = new codec09(group, true,u.getInterrupt());
 				codec c = new codec(JavaStruct.pack(c09));
 				c.setCtw((byte) 0x09);
 				byte[] data = JavaStruct.pack(c);
