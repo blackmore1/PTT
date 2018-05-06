@@ -1,5 +1,7 @@
 package tool;
 
+import java.util.List;
+
 import struct.StructClass;
 import struct.StructField;
 
@@ -7,5 +9,5 @@ import struct.StructField;
 public class codect {
 
 	@StructField(order = 0)
-	public double i;
+	public List<Integer> list;
 }

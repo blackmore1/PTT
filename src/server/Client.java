@@ -11,6 +11,7 @@ import struct.JavaStruct;
 import struct.StructException;
 import tool.codec;
 import tool.codec04;
+import tool.codec0c;
 import tool.tools;
 
 public class Client {
@@ -18,8 +19,8 @@ public class Client {
 	public static void main(String[] args) throws UnknownHostException, IOException, InterruptedException, StructException {
 		codec04 c04 = new codec04();
 		byte[] ip = {(byte) 192,(byte) 168,1,106};
-		c04.setName(tools.str2Bytes("lisi",32));
-		c04.setPwd(tools.str2Bytes("12345",32));
+		c04.setName(tools.str2Bytes("zhangsan",32));
+		c04.setPwd(tools.str2Bytes("1111",32));
 		c04.setCodenum((byte) 2);
 		c04.setCodelist(new byte[2]);
 		c04.setPrefix((byte) 24);
@@ -29,18 +30,15 @@ public class Client {
 		c.setCtw((byte) 0x04);
 		byte[] b = JavaStruct.pack(c);
 		System.out.println(b.length);
-		Socket socket=new Socket("223.3.101.112",3328);//198.35.45.72
+		Socket socket=new Socket("223.3.100.153",3328);//198.35.45.72
 		OutputStream out=socket.getOutputStream();
+		gps g = new gps(out);
+		new Thread(g).start();
 		InputStream in = socket.getInputStream();
-			out.write(b);
-			//out.write(buf1);
-			while(true){
+		out.write(b);
+		while(true){
 			byte[] buf=receive(in,1024);
 			nianbao(in, buf);
-			/*int len=in.read(buf);
-			byte[] b1 = Arrays.copyOfRange(buf, 0, len);
-			tools.printArray(b1);*/
-//			socket.close();
 		}
 	}
 	/**
@@ -89,6 +87,31 @@ public class Client {
 		}
 		else
 			tools.printArray(data);
+	}
+}
+class gps implements Runnable{
+	OutputStream out;
+	public gps(OutputStream out){
+		this.out = out;
+	}
+
+	@Override
+	public void run() {
+		while(true){
+			try {
+				codec0c c0c  = new codec0c();
+				c0c.setAltitude(1);
+				c0c.setLongitude(0);
+				codec c = new codec(JavaStruct.pack(c0c));
+				c.setCtw((byte) 0x0c);
+				out.write(JavaStruct.pack(c));
+//				System.out.println(1);
+				Thread.sleep(5000);
+			} catch (InterruptedException | StructException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 }
 

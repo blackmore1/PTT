@@ -1,8 +1,12 @@
 package tool;
 
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class tools {
 	public static byte[] int2Bytes(int x,int n){
@@ -55,26 +59,20 @@ public class tools {
 		byte[] strs = str.getBytes();
 		return concat(new byte[n-strs.length],strs);
 	}
-	public static byte[] getUserlist(String str){
+	public static byte[] getUserlist(HashMap<Integer,String> map){
 		byte[] userlist = new byte[0];
-		if(str==null||str.isEmpty())
-			return userlist;
-		String[] users = str.split("\\|");
-		for(String user:users){
-			String[] s = user.split("\\.");
-			int id = Integer.parseInt(s[0]);
-			userlist = concat(userlist,int2Bytes(id, 2));
-			String name = s[1];
-			userlist = concat(userlist,str2Bytes(name, 16));
+		Iterator<Map.Entry<Integer, String>> it = map.entrySet().iterator();
+		while(it.hasNext()){
+			Map.Entry<Integer, String> entry = it.next();
+			userlist = concat(userlist,int2Bytes(entry.getKey(), 2));
+			userlist = concat(userlist,str2Bytes(entry.getValue(), 16));
 		}
 		return userlist;
 	}
-	public static boolean isRepeat(int[] array) {
-        HashSet<Integer> hashSet = new HashSet<Integer>();
-        for (int i = 0; i < array.length; i++) {
-            hashSet.add(array[i]);
-        }
-        if (hashSet.size() == array.length) {
+	public static boolean isRepeat(List<Integer> list) {
+		Set<Integer> set = new TreeSet<Integer>();
+		set.addAll(list);
+        if (set.size() == list.size()) {
             return false;
         } else {
             return true;

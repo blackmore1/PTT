@@ -17,7 +17,8 @@ public class SubnetMask {
                                                                     // InterfaceAddresses
                                                                     // 所组成的列表
         if (list.size() > 0) {
-            int mask = list.get(0).getNetworkPrefixLength(); // 子网掩码的二进制1的个数
+//            int mask = list.get(0).getNetworkPrefixLength(); // 子网掩码的二进制1的个数
+            int mask = 32; // 子网掩码的二进制1的个数
             System.out.println(mask);
             StringBuilder maskStr = new StringBuilder();
             int[] maskIp = new int[4];

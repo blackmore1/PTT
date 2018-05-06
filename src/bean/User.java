@@ -1,5 +1,10 @@
 package bean;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.gson.Gson;
+
 public class User {
 	private int id;
 	private String name;
@@ -8,11 +13,11 @@ public class User {
 	private boolean broadcast;
 	private String ipv4;
 	private int codenum;
-	private String codelist;
+	private List<Integer> codelist = new ArrayList<Integer>();
 	private String gps;
 	private int currgroup;
 	private int groupnum;
-	private String grouplist;
+	private List<Integer> grouplist = new ArrayList<Integer>();
 	private String mark;
 	private boolean interrupt;
 	public boolean getInterrupt() {
@@ -45,10 +50,10 @@ public class User {
 	public void setGroupnum(int groupnum) {
 		this.groupnum = groupnum;
 	}
-	public String getGrouplist() {
+	public List<Integer> getGrouplist() {
 		return grouplist;
 	}
-	public void setGrouplist(String grouplist) {
+	public void setGrouplist(List<Integer> grouplist) {
 		this.grouplist = grouplist;
 	}
 	public String getGps() {
@@ -69,10 +74,10 @@ public class User {
 	public void setCodenum(int codenum) {
 		this.codenum = codenum;
 	}
-	public String getCodelist() {
+	public List<Integer> getCodelist() {
 		return codelist;
 	}
-	public void setCodelist(String codelist) {
+	public void setCodelist(List<Integer> codelist) {
 		this.codelist = codelist;
 	}
 	public int getId() {
@@ -101,9 +106,7 @@ public class User {
 	}
 	@Override
 	public String toString() {
-		return "User [id=" + id + ", name=" + name + ", pwd=" + pwd + ", status=" + status + ", broadcast=" + broadcast
-				+ ", ipv4=" + ipv4 + ", codenum=" + codenum + ", codelist=" + codelist + ", gps=" + gps + ", currgroup="
-				+ currgroup + ", groupnum=" + groupnum + ", grouplist=" + grouplist + ", mark=" + mark + "]";
+		return new Gson().toJson(this);
 	}
 
 }

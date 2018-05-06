@@ -7,10 +7,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import bean.Group;
-import bean.User;
 
 public class GroupDAO {
 	  
@@ -53,7 +56,7 @@ public class GroupDAO {
         	ps.setInt(1, group.getId());
             ps.setString(2, group.getDescription());
             ps.setInt(3, group.getUsernum());
-            ps.setString(4, group.getUserlist());
+            ps.setString(4, group.getUserlist().toString());
             ps.execute();
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
@@ -72,7 +75,7 @@ public class GroupDAO {
         try (Connection c = getConnection(); PreparedStatement ps = c.prepareStatement(sql);) {
   
         	ps.setInt(1, groups.getUsernum());
-            ps.setString(2, groups.getUserlist());
+            ps.setString(2, groups.getUserlist().toString());
             ps.setInt(3, groups.getId());
   
             ps.execute();
@@ -125,7 +128,10 @@ public class GroupDAO {
             	group = new Group();
                 String description = rs.getString(2);
                 int usernum = rs.getInt(3);
-                String userlist = rs.getString(4);
+                Gson gson = new Gson();
+                HashMap<Integer,String> userlist = gson.fromJson(rs.getString(4), new TypeToken<HashMap<Integer,String>>() {
+                	
+                }.getType());
                 group.setId(id);
                 group.setDescription(description);
                 group.setUsernum(usernum);
@@ -161,12 +167,10 @@ public class GroupDAO {
                 int id = rs.getInt(1);
                 String description = rs.getString(2);
                 int usernum = rs.getInt(3);
-                String userlist = rs.getString(4);
-                /*if(id!=++i)
-                {
-                		sql="update user set id= "+i+" where id = "+id;
-                		s.execute(sql);
-                }*/
+                Gson gson = new Gson();
+                HashMap<Integer,String> userlist = gson.fromJson(rs.getString(4), new TypeToken<HashMap<Integer,String>>() {
+                	
+                }.getType());
                 group.setId(id);//若是上面有效则id应改为i
                 group.setDescription(description);
                 group.setUsernum(usernum);

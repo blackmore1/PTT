@@ -5,8 +5,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -25,6 +27,7 @@ import tool.codec09;
 import tool.codec0b;
 import tool.codec0c;
 import tool.codec0d;
+import tool.codec0d1;
 import tool.codec11;
 import tool.codec21;
 import tool.codec22;
@@ -43,7 +46,7 @@ public class Rec implements Runnable {
 	}
 	public synchronized void add(SocketChannel s) throws IOException{
 		String ip=s.getRemoteAddress().toString();
-		Date nowTime = new Date();  
+		Date nowTime = new Date();
 		System.out.println(ip+"已连接"+nowTime);
 		try {
 			s.configureBlocking(false);
@@ -72,7 +75,11 @@ public class Rec implements Runnable {
 						System.out.println("Readable");
 						s = (SocketChannel) key.channel();
 						byte[] data = receive(1024);
-						if(data == null){ System.out.println("收到空数组");continue;}
+						if(data == null){
+							System.out.println("收到空数组");
+//							throw new IOException();
+							continue;
+						}
 						tools.printArray(data);
 						nianbao(data);
 					}
@@ -164,7 +171,7 @@ public class Rec implements Runnable {
 		JavaStruct.unpack(c, data);
 		if((data[5]&0x0ff)!=0x04){
 			UserDAO userdao = new UserDAO();
-			id = userdao.getidbymark(s.getRemoteAddress().toString());
+			id = userdao.getidbymark(s.getRemoteAddress().toString());//不是登录的话都要重置id为当前id
 			if(id==0)
 				return;
 		}
@@ -173,7 +180,7 @@ public class Rec implements Runnable {
 			ctw05(c.getContent());
 			break;
 		case 0x0c:
-			ctw0d(c.getContent());
+			ctw0d(c.getContent(),0);
 			break;
 		case 0x20:
 			ctw21(c.getContent());
@@ -209,7 +216,10 @@ public class Rec implements Runnable {
 			result = 0x00;
 			id = user.getId();
 			int codenum = c04.getCodenum();
-			String codelist = tools.bytes2Str(c04.getCodelist());
+			List<Integer> codelist = new ArrayList<Integer>();
+			for(byte b:c04.getCodelist()){
+				codelist.add(b&0x0ff);
+			}
 			String gps = ""+c04.getLatitude()+" "+c04.getLongitude();
 			String ipv4 = tools.ipv42Str(c04.getIpv4(),c04.getPrefix());
 			user.setStatus(true);
@@ -218,8 +228,15 @@ public class Rec implements Runnable {
 			user.setGps(gps);
 			user.setIpv4(ipv4);
 			user.setMark(s.getRemoteAddress().toString());
-			userdao.update(user);
-			buffer.addSocketChannel(id, s);
+			if(buffer.getSocketChannel(id)!=null){
+				System.out.println("用户已登录");
+				result = 0x03;
+//				return;
+			}
+			else{
+				userdao.update(user);
+				buffer.addSocketChannel(id, s);
+			}
 		}
 		codec05 c05 = new codec05();
 		c05.setResult(result);
@@ -242,20 +259,14 @@ public class Rec implements Runnable {
 		System.out.println("ctw07指导用户配置参数");
 		User user = new UserDAO().getbyid(id);
 		codec07 c07 = new codec07();
-		c07.setGpsperiod((byte) 10);
+		c07.setGpsperiod((byte) 30);
 		c07.setGroupnum((byte) user.getGroupnum());
 		c07.setCodenum((byte) user.getCodenum());
-		if(user.getCodelist().equals("")){
-			c07.setCodelist(new byte[0]);
+		byte[] codelist = new byte[user.getGrouplist().size()];
+		for(int i = 0;i<user.getGrouplist().size();i++){
+			codelist[i] = user.getGrouplist().get(i).byteValue();
 		}
-		else{
-			String[] strs = user.getCodelist().split("\\|");
-			byte[] codelist = new byte[strs.length];
-			for(int i = 0;i<strs.length;i++){
-				codelist[i] = (byte) Integer.parseInt(strs[i]);
-			}
-			c07.setCodelist(codelist);
-		}
+		c07.setCodelist(codelist);
 		codec c = new codec(JavaStruct.pack(c07));
 		c.setCtw((byte) 0x07);
 		byte[] data = JavaStruct.pack(c);
@@ -287,9 +298,7 @@ public class Rec implements Runnable {
 		c.setCtw((byte) 0x09);
 		byte[] data = JavaStruct.pack(c);
 		buffer.addList((byte)id, data);
-		String[] groups = user.getGrouplist().split("\\|");
-		for(String str:groups){
-			int gid = Integer.parseInt(str);
+		for(int gid:user.getGrouplist()){
 			if(gid!=user.getCurrgroup()){
 				Group group = groupdao.get(gid);
 				c09 = new codec09(group, false,user.getInterrupt());
@@ -299,7 +308,7 @@ public class Rec implements Runnable {
 				buffer.addList((byte)id, data);
 			}
 		}
-		ctw0b(user,3);
+		ctw0b(user.getCurrgroup(),3);
 	}
 	
 	/**
@@ -308,13 +317,12 @@ public class Rec implements Runnable {
 	 * 4:下线通知  ，都不用转发GPS
 	 * 5：激活通知 
 	 * */
-	public void ctw0b(User user,int n) throws StructException{
+	public void ctw0b(int groupid,int n) throws StructException{
 		System.out.println("ctw0b群组更新");
 		UserDAO userdao = new UserDAO();
+		User user = userdao.getbyid(id);
 		if(n==3){
-			String[] groups = user.getGrouplist().split("\\|");
-			for(String str:groups){
-				int gid = Integer.parseInt(str);
+			for(int gid:user.getGrouplist()){
 				List<User> users = userdao.list("select * from user where status = 1 and currgroup = "+gid);
 				codec0b c0b = new codec0b();
 				c0b.setMark((byte) 5);
@@ -337,43 +345,68 @@ public class Rec implements Runnable {
 		codec0b c0b = new codec0b();
 		c0b.setMark((byte) n);
 		c0b.setUsernum((byte) 1);
-		c0b.setGroupid((short) user.getCurrgroup());
+		c0b.setGroupid((short) groupid);
 		c0b.setUserlist(tools.int2Bytes(user.getId(), 2));
 		codec c = new codec(JavaStruct.pack(c0b));
 		c.setCtw((byte) 0x0b);
 		byte[] data = JavaStruct.pack(c);
-		List<User> users = userdao.list("select * from user where broadcast = 1 and currgroup = "+user.getCurrgroup());
+		List<User> users = userdao.list("select * from user where status = 1 and id != "+id+" and currgroup = "+groupid);
 		for(User u:users){
 			buffer.addList((byte) u.getId(), data);
 		}
 		if(n==4)
 			return;
 		String[] gpss = user.getGps().split(" ");
-		codec0c c0c = new codec0c(); 
-		c0c.setAltitude(Double.parseDouble(gpss[0])); 
-		c0c.setLongitude(Double.parseDouble(gpss[1])); 
-		ctw0d(JavaStruct.pack(c0c));
+		codec0c c0c = new codec0c();
+		c0c.setAltitude(Double.parseDouble(gpss[0]));
+		c0c.setLongitude(Double.parseDouble(gpss[1]));
+		ctw0d(JavaStruct.pack(c0c),1);
 	}
 	
 	/**
-	 * 用户位置更新
+	 * 用户位置更新  n为1：用户新上线，给他发送当前群组所有用户地址,再给别人发送自己地址，为0发送只给别人发当前用户
 	 * */
-	public void ctw0d(byte[] gps) throws StructException{
+	public void ctw0d(byte[] gps,int n) throws StructException{
 		System.out.println("ctw0dGPS更新");
+		//更新数据库地址
 		UserDAO userdao = new UserDAO();
 		User user = userdao.getbyid(id);
 		codec0c c0c = new codec0c();
 		JavaStruct.unpack(c0c, gps);
-		user.setGps(""+c0c.getAltitude()+" "+c0c.getLongitude());
+		user.setGps(c0c.getAltitude()+" "+c0c.getLongitude());
 		userdao.update(user);
+		
+		//发送反馈
 		codec0d c0d = new codec0d();
+		if(n==1){
+			List<User> gpsusers = userdao.list("select * from user where status = 1 and currgroup = "+user.getCurrgroup());
+			c0d.setUsernum((byte) gpsusers.size());
+			byte[] gpslist = new byte[0];
+			for(User gu:gpsusers){
+				String[] gpss = user.getGps().split(" ");
+				codec0c c0c1 = new codec0c(); 
+				c0c1.setAltitude(Double.parseDouble(gpss[0])); 
+				c0c1.setLongitude(Double.parseDouble(gpss[1])); 
+				codec0d1 c0d1 = new codec0d1();
+				c0d1.setId((short) gu.getId());
+				c0d1.setGps(JavaStruct.pack(c0c1));
+				gpslist = tools.concat(gpslist, JavaStruct.pack(c0d1));
+			}
+			c0d.setGpslist(gpslist);
+			codec c = new codec(JavaStruct.pack(c0d));
+			c.setCtw((byte) 0x0d);
+			byte[] data = JavaStruct.pack(c);
+			buffer.addList((byte) id, data);
+		}
 		c0d.setUsernum((byte) 1);
-		c0d.setId((short) id);
-		c0d.setGps(gps);
+		codec0d1 c0d1 = new codec0d1();
+		c0d1.setId((short)id);
+		c0d1.setGps(gps);
+		c0d.setGpslist(JavaStruct.pack(c0d1));
 		codec c = new codec(JavaStruct.pack(c0d));
 		c.setCtw((byte) 0x0d);
 		byte[] data = JavaStruct.pack(c);
-		List<User> users = userdao.list("select * from user where broadcast = 1 and currgroup = "+user.getCurrgroup());
+		List<User> users = userdao.list(String.format("select * from user where status = 1 and currgroup = %d and id!=%d", user.getCurrgroup(),id));
 		for(User u:users){
 			buffer.addList((byte) u.getId(), data);
 		}
@@ -399,7 +432,7 @@ public class Rec implements Runnable {
 				userdao.update(u);
 				Group group = groupdao.get(u.getCurrgroup());
 				group.setUsernum(0);
-				group.setUserlist("");
+				group.userlist.clear();
 				codec09 c09 = new codec09(group, broadcast,u.getInterrupt());
 				codec c = new codec(JavaStruct.pack(c09));
 				c.setCtw((byte) 0x09);
@@ -435,10 +468,10 @@ public class Rec implements Runnable {
 		data = JavaStruct.pack(c);
 		buffer.addList((byte)id, data);
 		//向新群组用户发送0x0B,更新群组
-		ctw0b(user,5);
+		ctw0b(user.getCurrgroup(),5);
 		user.setCurrgroup((content[2]&0x0ff)<<8|content[3]&0x0ff);
 		//向旧群组用户发送0x0B
-		ctw0b(user,4);
+		ctw0b(user.getCurrgroup(),4);
 	}
 	
 	/**
@@ -523,7 +556,7 @@ public class Rec implements Runnable {
 				userdao.update(u);
 				Group group = groupdao.get(u.getCurrgroup());
 				group.setUsernum(0);
-				group.setUserlist("");
+				group.userlist.clear();
 				codec09 c09 = new codec09(group, true,u.getInterrupt());
 				codec c = new codec(JavaStruct.pack(c09));
 				c.setCtw((byte) 0x09);
@@ -538,7 +571,7 @@ public class Rec implements Runnable {
 		userdao.update(user);
 		buffer.delSocketChannel(id);
 		//下线通知
-		ctw0b(user,4);
+		ctw0b(user.getCurrgroup(),4);
 	}
 
 }

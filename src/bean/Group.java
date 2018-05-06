@@ -1,19 +1,21 @@
 package bean;
 
+import java.util.HashMap;
+
 public class Group {
-	private int id;
-	private String description;
-	private int usernum;
-	private String userlist;
-	@Override
-	public String toString() {
-		return "Group [id=" + id + ", description=" + description + ", usernum=" + usernum + ", userlist=" + userlist
-				+ "]";
-	}
-	public String getUserlist() {
+	public int id;
+	public String description;
+	public int usernum;
+	public HashMap<Integer,String> userlist = new HashMap<>();
+//	@Override
+//	public String toString() {
+//		return "Group [id=" + id + ", description=" + description + ", usernum=" + usernum + ", userlist=" + userlist
+//				+ "]";
+//	}
+	public HashMap<Integer,String> getUserlist() {
 		return userlist;
 	}
-	public void setUserlist(String userlist) {
+	public void setUserlist(HashMap<Integer,String> userlist) {
 		this.userlist = userlist;
 	}
 	public int getId() {

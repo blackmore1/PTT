@@ -9,11 +9,8 @@ public class codec0d {
 	private byte usernum;
 	
 	@StructField(order = 1)
-	private short id;
+	private byte[] gpslist;
 	
-	@StructField(order = 2)
-	private byte[] gps = new byte[16];
-
 	public byte getUsernum() {
 		return usernum;
 	}
@@ -22,19 +19,13 @@ public class codec0d {
 		this.usernum = usernum;
 	}
 
-	public short getId() {
-		return id;
+	public byte[] getGpslist() {
+		return gpslist;
 	}
 
-	public void setId(short id) {
-		this.id = id;
+	public void setGpslist(byte[] gpslist) {
+		this.gpslist = gpslist;
 	}
-
-	public byte[] getGps() {
-		return gps;
-	}
-
-	public void setGps(byte[] gps) {
-		this.gps = gps;
-	}
+	
+	
 }
