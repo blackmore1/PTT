@@ -7,6 +7,8 @@ import java.util.InputMismatchException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import com.google.gson.Gson;
@@ -31,7 +33,7 @@ public class Admin implements Runnable {
 	@Override
 	public void run() {
 		while(true){
-			System.out.println("输入指令：(1:用户信息;2:添加用户或群组;3:删除用户4:权限管理;5:更新群组)");
+			System.out.println("输入指令：(1:用户信息;2:添加用户或群组;3:删除用户4:权限管理;5:更新群组;6:缓冲区)");
 			try{
 				int order = sc.nextInt();
 				switch(order){
@@ -50,16 +52,42 @@ public class Admin implements Runnable {
 				case 5:
 					updategroup();;
 					break;
+				case 6:
+					bufferinfo();;
+					break;
 				default:
 					System.out.println("输入错误:"+order);
 				}
-			}catch(InputMismatchException e){
+			}catch(NoSuchElementException e){
 				String token = sc.next();
 				System.out.println("输入错误:"+token);
 			}
 		}
 	}
 	
+	private void bufferinfo() {
+		System.out.println("输入指令：(1:socket缓冲区大小;2:socket缓冲区列表;3:发言权)");
+		try{
+			int order = sc.nextInt();
+			if(order==1){
+				System.out.println(buffer.sockets.size());
+			}
+			else if(order==2){
+				Iterator it = buffer.sockets.entrySet().iterator();
+				while(it.hasNext()){
+					Map.Entry<Integer,SocketChannel> entry = (Entry) it.next();
+					System.out.println(entry.getKey()+" "+entry.getValue().getRemoteAddress().toString());
+				}
+			}
+			else if(order==3){
+				for(int s:buffer.status)
+					System.out.print(s+" ");
+				System.out.println();
+			}
+		}catch(InputMismatchException | IOException e){
+			System.out.println("输入错误");
+		}
+	}
 	private void addUserorGroup() {
 		System.out.println("输入指令：(1:添加用户;2:添加群组)");
 		try{
@@ -79,6 +107,7 @@ public class Admin implements Runnable {
 			sc.nextLine();//防止在sc.nextInt()后出异常
 			group.description = sc.nextLine();
 			new GroupDAO().add(group);
+			buffer.status = tools.concat(buffer.status, new int[1]);
 		}catch(InputMismatchException e){
 			System.out.println("输入错误");
 		}
@@ -212,15 +241,15 @@ public class Admin implements Runnable {
 					System.out.println("用户不存在");
 					return;
 				}
-				if(user.getStatus()==false){
-					System.out.println("用户不在线");
-					return;
-				}
-				SocketChannel s = buffer.getSocketChannel(id);
+//				if(user.getStatus()==false){
+//					System.out.println("用户不在线");
+//					return;
+//				}
+//				SocketChannel s = buffer.getSocketChannel(id);
 				new Rec(buffer).close(id);
-				if(s!=null){
-					s.close();
-				}
+//				if(s!=null){
+//					s.close();
+//				}
 			}
 			else if(order == 2){
 				System.out.println("输入用户id:");
@@ -243,8 +272,6 @@ public class Admin implements Runnable {
 			}
 		}catch(InputMismatchException | IOException | StructException e){
 			System.out.println("输入错误");
-		}finally{
-			sc.close();
 		}
 	}
 	

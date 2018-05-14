@@ -12,6 +12,7 @@ import struct.StructException;
 import tool.codec;
 import tool.codec04;
 import tool.codec0c;
+import tool.codec22;
 import tool.tools;
 
 public class Client {
@@ -30,12 +31,12 @@ public class Client {
 		c.setCtw((byte) 0x04);
 		byte[] b = JavaStruct.pack(c);
 		System.out.println(b.length);
-		Socket socket=new Socket("223.3.100.153",3328);//198.35.45.72
+		Socket socket=new Socket("223.3.154.180",3328);//198.35.45.72
 		OutputStream out=socket.getOutputStream();
 		gps g = new gps(out);
-		new Thread(g).start();
 		InputStream in = socket.getInputStream();
 		out.write(b);
+		new Thread(g).start();
 		while(true){
 			byte[] buf=receive(in,1024);
 			nianbao(in, buf);
@@ -99,14 +100,21 @@ class gps implements Runnable{
 	public void run() {
 		while(true){
 			try {
-				codec0c c0c  = new codec0c();
-				c0c.setAltitude(1);
-				c0c.setLongitude(0);
-				codec c = new codec(JavaStruct.pack(c0c));
-				c.setCtw((byte) 0x0c);
-				out.write(JavaStruct.pack(c));
-//				System.out.println(1);
 				Thread.sleep(5000);
+				codec22 c22 = new codec22();
+				c22.setCode((byte) 0);
+				c22.setGroupid((short) 3);
+				byte[] b= new byte[3100];
+				for(int i=0;i<b.length;i++)
+					b[i]=1;
+				c22.setMessage(b);
+				codec c = new codec(JavaStruct.pack(c22));
+				c.setCtw((byte) 0x22);
+				byte[] data = JavaStruct.pack(c);
+				System.out.println(data.length);
+				tools.printArray(data);
+				out.write(data);
+//				System.out.println(1);
 			} catch (InterruptedException | StructException | IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

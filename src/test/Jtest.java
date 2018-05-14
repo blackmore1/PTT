@@ -1,8 +1,8 @@
 package test;
 
+import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
@@ -15,7 +15,7 @@ import struct.JavaStruct;
 import struct.StructException;
 import tool.codec;
 import tool.codec04;
-import tool.codect;
+import tool.codec21;
 import tool.tools;
 
 public class Jtest {
@@ -34,7 +34,6 @@ public class Jtest {
 		c.setCtw((byte) 0x04);
 		this.b = JavaStruct.pack(c);
 	}
-
 //	@Test
 	public void adduser() {
 			User user = new User();
@@ -72,10 +71,15 @@ public class Jtest {
 	}
 	@Test
 	public void testnull() throws UnknownHostException, SocketException, StructException{
-		codect ct = new codect();
-		ct.list = new ArrayList<Integer>();
-		ct.list.add(1);
-		JavaStruct.pack(ct);
+		tools.printArray(shortToByte((short)4));
 	}
-
+	public static byte[] shortToByte(short number) {
+        int temp = number;
+        byte[] b = new byte[2];
+        for (int i = 0; i < b.length; i++) {
+            b[i] = new Integer(temp & 0xff).byteValue();// 将最低位保存在最低位
+            temp = temp >> 8; // 向右移8位
+        }
+        return b;
+    }
 }

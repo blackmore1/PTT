@@ -13,21 +13,24 @@ public class Server {
         ServerSocketChannel ss = ServerSocketChannel.open();
 		ss.socket().bind(new InetSocketAddress(3328));
 		ss.configureBlocking(false);
-		SocketChannel s = null;
-		boolean flag = true;
+//		SocketChannel s = null;
+//		boolean flag = true;
 		Buffer buffer = new Buffer();
 		new Thread(new Send(buffer)).start();
 		new Thread(new Admin(buffer)).start();
+		new Thread(new Heart(buffer)).start();
 		Rec r = new Rec(buffer);
-		while(true){
-			s = ss.accept();
-			if(s!=null)
-				r.add(s);
-			if(flag&&s!=null){
-				new Thread(r).start();
-				flag = false;
-			}
-		}	
+		r.add(ss);
+		new Thread(r).start();
+//		while(true){
+//			s = ss.accept();
+//			if(s!=null)
+//				r.add(s);
+//			if(flag&&s!=null){
+//				new Thread(r).start();
+//				flag = false;
+//			}
+//		}	
 	}
 
 }

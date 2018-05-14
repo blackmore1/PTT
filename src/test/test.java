@@ -34,48 +34,19 @@ import tool.codec09;
 import tool.codect;
 import tool.tools;
 
-public class test {  
+public class test {
+	public static void main(String args[]) throws StructException, IOException {  
+    	test1.t1.print();
+    } 
+}
+class test1 {  
     
-    @StructClass   
-    public class Foo {  
-          
-        @StructField(order = 0)  
-        public byte b;  
-          
-        @StructField(order = 1)  
-        public byte[] i = new byte[3];  
-        
-        @StructField(order = 2)  
-        public int j;  
-          
-    }  
+    public static test2 t1= new test2();
       
-    public void TestFoo() {  
-        try {   
-            // Pack the class as a byte buffer   
-            Foo f = new Foo();  
-            f.b = (byte)258;  
-//            Arrays.fill(f.i, (byte) 2);
-            f.j = 128;
-            byte[] b = JavaStruct.pack(f);  
-            for (int i = 0; i < b.length; i++) {  
-                System.out.printf("b[%d]: %d\n", i, b[i]);  
-            }  
-              
-            // Unpack it into an object  
-            Foo f2 = new Foo();  
-            JavaStruct.unpack(f2, b);  
-            System.out.println("f2.b: " + f2.b);  
-            System.out.println("f2.i: " + f2.i);  
-              
-        } catch(StructException e) {   
-            e.printStackTrace();  
-        }   
-    }  
-      
-    public static void main(String args[]) throws StructException, IOException {  
-    	byte[] data = {0x00,0x0a,(byte) 0xaa,0x55,0x10,0x22,0x00,0x00,0x00,0x01};
-    	byte[] b = tools.int2Bytes(0, 2);
-    	tools.printArray(b);
-    }  
+     
 } 
+class test2{
+	public void print(){
+		System.out.println(1);
+	}
+}

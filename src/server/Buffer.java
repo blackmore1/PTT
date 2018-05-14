@@ -4,10 +4,14 @@ import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import dao.GroupDAO;
+
 public class Buffer {
-	private HashMap<Integer,SocketChannel> sockets = new HashMap<>();
-	private LinkedList<Byte> list = new LinkedList<Byte>();
-	private int[] status = new int[7];//默认为false
+	public HashMap<Integer,SocketChannel> sockets = new HashMap<>();
+	public LinkedList<Byte> list = new LinkedList<Byte>();
+	public int[] status = new int[new GroupDAO().getTotal()];//默认为false
+	
+	public HashMap<Integer,Integer> hearts = new HashMap<>();
 	
 	public synchronized void addList(byte id, byte[] buf){
 		list.add(id);

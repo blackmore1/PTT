@@ -117,10 +117,9 @@ public class GroupDAO {
   
     public Group get(int id) {
     	Group group= null;
-  
         try (Connection c = getConnection(); Statement s = c.createStatement();) {
   
-            String sql = "select * from groups where id = \"" + id+"\"";
+            String sql = "select * from groups where id ="+id;
   
             ResultSet rs = s.executeQuery(sql);
   

@@ -139,6 +139,22 @@ public class UserDAO {
         }
         return user;
     }
+    public List<Integer> onlinelist() {
+    	List<Integer> list = new ArrayList<>();
+    	String sql = "select id from user where status = 1";
+    	try (Connection c = getConnection(); Statement s = c.createStatement();) {
+    		
+    		ResultSet rs = s.executeQuery(sql);
+    		while(rs.next()){
+    			list.add(rs.getInt("id"));
+    		}
+    		
+    	} catch (SQLException e) {
+    		
+    		e.printStackTrace();
+    	}
+    	return list;
+    }
     public void delete(int id) {
     	
     	String sql = "delete from user where id ="+id;
