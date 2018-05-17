@@ -13,15 +13,12 @@ public class Server {
         ServerSocketChannel ss = ServerSocketChannel.open();
 		ss.socket().bind(new InetSocketAddress(3328));
 		ss.configureBlocking(false);
-//		SocketChannel s = null;
-//		boolean flag = true;
-		Buffer buffer = new Buffer();
-		new Thread(new Send(buffer)).start();
-		new Thread(new Admin(buffer)).start();
-		new Thread(new Heart(buffer)).start();
-		Rec r = new Rec(buffer);
+		Receive r = new Receive();
 		r.add(ss);
 		new Thread(r).start();
+		new Thread(new Send()).start();
+		new Thread(new Admin()).start();
+		new Thread(new Heart()).start();
 //		while(true){
 //			s = ss.accept();
 //			if(s!=null)

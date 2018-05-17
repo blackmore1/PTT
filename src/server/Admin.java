@@ -25,11 +25,7 @@ import tool.codec0b;
 import tool.tools;
 
 public class Admin implements Runnable {
-	private Buffer buffer;
 	Scanner sc = new Scanner(System.in); 
-	public Admin(Buffer buffer){
-		this.buffer = buffer;
-	}
 	@Override
 	public void run() {
 		while(true){
@@ -70,17 +66,17 @@ public class Admin implements Runnable {
 		try{
 			int order = sc.nextInt();
 			if(order==1){
-				System.out.println(buffer.sockets.size());
+				System.out.println(Buffer.sockets.size());
 			}
 			else if(order==2){
-				Iterator it = buffer.sockets.entrySet().iterator();
+				Iterator it = Buffer.sockets.entrySet().iterator();
 				while(it.hasNext()){
 					Map.Entry<Integer,SocketChannel> entry = (Entry) it.next();
 					System.out.println(entry.getKey()+" "+entry.getValue().getRemoteAddress().toString());
 				}
 			}
 			else if(order==3){
-				for(int s:buffer.status)
+				for(int s:Buffer.status)
 					System.out.print(s+" ");
 				System.out.println();
 			}
@@ -107,7 +103,7 @@ public class Admin implements Runnable {
 			sc.nextLine();//防止在sc.nextInt()后出异常
 			group.description = sc.nextLine();
 			new GroupDAO().add(group);
-			buffer.status = tools.concat(buffer.status, new int[1]);
+			Buffer.status = tools.concat(Buffer.status, new int[1]);
 		}catch(InputMismatchException e){
 			System.out.println("输入错误");
 		}
@@ -201,7 +197,7 @@ public class Admin implements Runnable {
 				byte[] data = JavaStruct.pack(c);
 				List<User> users = userdao.list("select * from user where broadcast = 1 and currgroup = "+groupid);
 				for(User u:users){
-					buffer.addList((byte) u.getId(), data);
+					Buffer.addList((byte) u.getId(), data);
 				}
 			}
 		}catch(NumberFormatException | StructException e){
@@ -214,11 +210,10 @@ public class Admin implements Runnable {
 		System.out.println("输入需要删除的用户id：");
 		try{
 			int id = sc.nextInt();
-			User user = userdao.getbyid(id);
-			SocketChannel s = buffer.getSocketChannel(id);
+			SocketChannel s = Buffer.getSocketChannel(id);
 			if(s!=null){
 				s.close();
-				new Rec(buffer).close(id);
+				new Receive().close(id);
 			}
 			userdao.delete(id);
 		}catch(InputMismatchException | IOException | StructException e){
@@ -245,8 +240,8 @@ public class Admin implements Runnable {
 //					System.out.println("用户不在线");
 //					return;
 //				}
-//				SocketChannel s = buffer.getSocketChannel(id);
-				new Rec(buffer).close(id);
+//				SocketChannel s = Buffer.getSocketChannel(id);
+				new Receive().close(id);
 //				if(s!=null){
 //					s.close();
 //				}
@@ -268,7 +263,7 @@ public class Admin implements Runnable {
 				codec c = new codec(JavaStruct.pack(c09));
 				c.setCtw((byte) 0x09);
 				byte[] data = JavaStruct.pack(c);
-				buffer.addList((byte) id, data);
+				Buffer.addList((byte) id, data);
 			}
 		}catch(InputMismatchException | IOException | StructException e){
 			System.out.println("输入错误");

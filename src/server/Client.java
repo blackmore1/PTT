@@ -31,12 +31,13 @@ public class Client {
 		c.setCtw((byte) 0x04);
 		byte[] b = JavaStruct.pack(c);
 		System.out.println(b.length);
-		Socket socket=new Socket("223.3.154.180",3328);//198.35.45.72
+		Socket socket=new Socket("198.35.45.72",3328);//198.35.45.72
 		OutputStream out=socket.getOutputStream();
 		gps g = new gps(out);
 		InputStream in = socket.getInputStream();
 		out.write(b);
 		new Thread(g).start();
+		new Thread(new heart1(out)).start();
 		while(true){
 			byte[] buf=receive(in,1024);
 			nianbao(in, buf);
@@ -104,7 +105,7 @@ class gps implements Runnable{
 				codec22 c22 = new codec22();
 				c22.setCode((byte) 0);
 				c22.setGroupid((short) 3);
-				byte[] b= new byte[3100];
+				byte[] b= new byte[6100];
 				for(int i=0;i<b.length;i++)
 					b[i]=1;
 				c22.setMessage(b);
@@ -122,4 +123,31 @@ class gps implements Runnable{
 		}
 	}
 }
-
+class heart1 implements Runnable{
+	OutputStream out;
+	public heart1(OutputStream out){
+		this.out = out;
+	}
+	
+	@Override
+	public void run() {
+		while(true){
+			try {
+				Thread.sleep(10000);
+				codec0c c0c = new codec0c();
+				c0c.setAltitude(1.1);
+				c0c.setLongitude(2.2);
+				codec c = new codec(JavaStruct.pack(c0c));
+				c.setCtw((byte) 0x0c);
+				byte[] data = JavaStruct.pack(c);
+				System.out.println(data.length);
+				tools.printArray(data);
+				out.write(data);
+//				System.out.println(1);
+			} catch (InterruptedException | StructException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+}

@@ -1,52 +1,31 @@
 package test;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Deque;
-import java.util.InputMismatchException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Scanner;
+import java.nio.ByteBuffer;
 
-import bean.Group;
-import bean.User;
-import dao.GroupDAO;
-import dao.UserDAO;
-import server.Buffer;
-import struct.JavaStruct;
-import struct.StructClass;
-import struct.StructException;
-import struct.StructField;
-import tool.codec;
-import tool.codec04;
-import tool.codec05;
-import tool.codec07;
-import tool.codec09;
-import tool.codect;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
+import tool.Student;
 import tool.tools;
 
 public class test {
-	public static void main(String args[]) throws StructException, IOException {  
-    	test1.t1.print();
+	static Logger log = Logger.getLogger(test.class);
+	public static void main(String args[]) { 
+		PropertyConfigurator.configure("./log4j.properties");
+		log.info("1");
+		log.error("1");
+		Student student = new Student();
+//	     student.setD(1.1);
+//	     student.setYear(2003);
+//	     student.getYear().set(2003);
+	     student.getGrade().set(12.5f);
+	     System.out.println(student.toString());
+	     ByteBuffer buf = student.getByteBuffer();
+	     byte[] data = new byte[buf.remaining()];
+	     buf.get(data);
+	     System.out.println(data.length);
+	     tools.printArray(data);
+//	     System.out.println(student.getYear());
+	     
     } 
-}
-class test1 {  
-    
-    public static test2 t1= new test2();
-      
-     
-} 
-class test2{
-	public void print(){
-		System.out.println(1);
-	}
 }

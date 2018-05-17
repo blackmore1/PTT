@@ -10,19 +10,13 @@ import tool.tools;
 
 public class Send implements Runnable {
 
-	private Buffer buffer;
-	
-	public Send(Buffer buffer) {
-		this.buffer = buffer;
-	}
-
 	@Override
 	public void run() {
 		while(true){
-			if(!buffer.isEmpty()){
-				byte[] idata = buffer.getList();
+			if(!Buffer.isEmpty()){
+				byte[] idata = Buffer.getList();
 				int id = idata[0]&0x0ff;
-				SocketChannel s = buffer.getSocketChannel(id);
+				SocketChannel s = Buffer.getSocketChannel(id);
 				if(s==null)	continue;
 				try {
 					ByteBuffer byteBuffer = ByteBuffer.allocate(idata.length-1);
@@ -34,7 +28,7 @@ public class Send implements Runnable {
 					e.printStackTrace();
 					try {
 //						s.close();
-						new Rec(buffer).close(id);
+						new Receive().close(id);
 					} catch (StructException e1) {
 						e1.printStackTrace();
 					} catch (IOException e1) {

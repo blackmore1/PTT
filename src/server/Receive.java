@@ -2,6 +2,7 @@ package server;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -19,6 +20,7 @@ import dao.GroupDAO;
 import dao.UserDAO;
 import struct.JavaStruct;
 import struct.StructException;
+import tool.Configure;
 import tool.codec;
 import tool.codec04;
 import tool.codec05;
@@ -34,14 +36,14 @@ import tool.codec22;
 import tool.codec23;
 import tool.tools;
 
-public class Rec implements Runnable {
+public class Receive implements Runnable {
 
-	private Buffer buffer;
+//	private Buffer buffer;
 	private Selector selector;
 	private SocketChannel s;
 	private int id;
-	public Rec(Buffer buffer) throws IOException{
-		this.buffer = buffer;
+	public Receive() throws IOException{
+//		this.buffer = buffer;
 		selector = Selector.open();
 	}
 	public void add(SocketChannel s) throws IOException{
@@ -49,7 +51,7 @@ public class Rec implements Runnable {
 		Date nowTime = new Date();
 		id = new UserDAO().getidbymark(ip);
 		if(id!=0){
-			buffer.addSocketChannel(id, s);
+			Buffer.addSocketChannel(id, s);
 			System.out.println(ip+"恢复连接"+nowTime);
 		}
 		else
@@ -91,9 +93,9 @@ public class Rec implements Runnable {
 						add(ss.accept());
 					}
 					else if(key.isValid()&&key.isReadable()){
-//						System.out.println("Readable");
+						System.out.println("Readable");
 						s = (SocketChannel) key.channel();
-						byte[] data = receive(1024);
+						byte[] data = receive(5);
 						if(data == null){
 							throw new IOException();
 //							continue;
@@ -101,7 +103,7 @@ public class Rec implements Runnable {
 						System.out.println(data.length);
 //						if(data[5]!=0x0c&&data[5]!=0x22)
 //							tools.printArray(data);
-						nianbao(data);
+						zhanbao(data);
 					}
 					else
 						System.out.println("key无效");
@@ -117,8 +119,10 @@ public class Rec implements Runnable {
                 	close(id);
 //                	s.close();
 				} catch (IOException | StructException e1) {
+					Configure.log.error(e1.getLocalizedMessage());
 					e1.printStackTrace();
 				}
+                Configure.log.error(e.getMessage(),e);
 				e.printStackTrace();
 			}finally{
 				selectedKeys.clear();
@@ -144,9 +148,24 @@ public class Rec implements Runnable {
 		if((data.length>4)&&(data[2]==(byte)0xaa)&&(data[3]==0x55)){
 			rlen = (data[0]&0x0ff)<<8|data[1]&0x0ff;
 		}
+		while(len<rlen){
+			ByteBuffer buf1 = ByteBuffer.allocate(rlen-len);
+			int len1 = s.read(buf1);
+			if(len1==-1){
+				System.out.println("收到空数组");
+				return null;
+			}
+			buf1.flip();
+			if(buf1.remaining()>0){
+				byte[] data1 = new byte[buf1.remaining()];
+				buf1.get(data1);
+				data = tools.concat(data,data1);
+				len = data.length;
+			}
+		}
 		System.out.println("len:"+len+"  "+"rlen:"+rlen);
-		if(len<rlen)
-			data = tools.concat(data,receive(rlen-len));
+//		if(len<rlen)
+//			data = tools.concat(data,receive(rlen-len));
 		return data;
 	}
 	
@@ -155,8 +174,15 @@ public class Rec implements Runnable {
 	 * @throws IOException 
 	 * @throws StructException 
 	 * */
-	public void nianbao(byte[] data) throws IOException, StructException{
-		int rlen = (data[0]&0x0ff)<<8|data[1]&0x0ff;
+	public void zhanbao(byte[] data) throws IOException, StructException{
+		int rlen = 0;
+		if((data.length>4)&&(data[2]==(byte)0xaa)&&(data[3]==0x55)){
+			rlen = (data[0]&0x0ff)<<8|data[1]&0x0ff;
+		}
+		if(rlen==0){
+			System.out.println("数据错误");
+			return;
+		}
 		if(rlen<data.length){
 			byte[] split1 = Arrays.copyOfRange(data, 0, rlen);
 			byte[] split2 = Arrays.copyOfRange(data, rlen, data.length);
@@ -165,11 +191,14 @@ public class Rec implements Runnable {
 			if(rlen2 == split2.length)
 				redirect(split2);
 			else if(rlen2>split2.length){
-				byte[] b = tools.concat(split2, receive(rlen2-split2.length));
-				nianbao(b);
+				byte[] split3 = receive(rlen2-split2.length);
+				if(split3==null)
+					return;
+				byte[] b = tools.concat(split2, split3);
+				zhanbao(b);
 			}
 			else
-				nianbao(split2);
+				zhanbao(split2);
 		}
 		else
 			redirect(data);
@@ -190,7 +219,14 @@ public class Rec implements Runnable {
 	 * @throws IOException 
 	 * */
 	public void redirect(byte[] data) throws StructException, IOException{
-		int rlen = (data[0]&0x0ff)<<8|data[1]&0x0ff;
+		int rlen = 0;
+		if((data.length>4)&&(data[2]==(byte)0xaa)&&(data[3]==0x55)){
+			rlen = (data[0]&0x0ff)<<8|data[1]&0x0ff;
+		}
+		if(rlen!=data.length||rlen<6){
+			System.out.println("数据错误");
+			return;
+		}
 		codec c = new codec(new byte[rlen-6]);
 		JavaStruct.unpack(c, data);
 		if((data[5]&0x0ff)!=0x04){
@@ -255,7 +291,7 @@ public class Rec implements Runnable {
 			user.setGps(gps);
 			user.setIpv4(ipv4);
 			user.setMark(s.getRemoteAddress().toString().split(":")[0]);
-			if(buffer.getSocketChannel(id)!=null){
+			if(Buffer.getSocketChannel(id)!=null){
 				System.out.println("用户已登录");
 				result = 0x01;
 				reason = 0x03;
@@ -265,7 +301,7 @@ public class Rec implements Runnable {
 				result = 0x00;
 				reason = 0x00;
 				userdao.update(user);
-				buffer.addSocketChannel(id, s);
+				Buffer.addSocketChannel(id, s);
 			}
 		}
 		codec05 c05 = new codec05();
@@ -300,7 +336,7 @@ public class Rec implements Runnable {
 		codec c = new codec(JavaStruct.pack(c07));
 		c.setCtw((byte) 0x07);
 		byte[] data = JavaStruct.pack(c);
-		buffer.addList((byte) id, data);
+		Buffer.addList((byte) id, data);
 		ctw09();
 	}
 	
@@ -327,7 +363,7 @@ public class Rec implements Runnable {
 		codec c = new codec(JavaStruct.pack(c09));
 		c.setCtw((byte) 0x09);
 		byte[] data = JavaStruct.pack(c);
-		buffer.addList((byte)id, data);
+		Buffer.addList((byte)id, data);
 		for(int gid:user.getGrouplist()){
 			if(gid!=user.getCurrgroup()){
 				Group group = groupdao.get(gid);
@@ -335,7 +371,7 @@ public class Rec implements Runnable {
 				c = new codec(JavaStruct.pack(c09));
 				c.setCtw((byte) 0x09);
 				data = JavaStruct.pack(c);
-				buffer.addList((byte)id, data);
+				Buffer.addList((byte)id, data);
 			}
 		}
 		ctw0b(user.getCurrgroup(),3);
@@ -370,7 +406,7 @@ public class Rec implements Runnable {
 				codec c = new codec(JavaStruct.pack(c0b));
 				c.setCtw((byte) 0x0b);
 				byte[] data = JavaStruct.pack(c);
-				buffer.addList((byte)id, data);
+				Buffer.addList((byte)id, data);
 			}
 			n=5;
 		}
@@ -384,7 +420,7 @@ public class Rec implements Runnable {
 		byte[] data = JavaStruct.pack(c);
 		List<User> users = userdao.list("select * from user where status = 1 and id != "+id+" and currgroup = "+groupid);
 		for(User u:users){
-			buffer.addList((byte) u.getId(), data);
+			Buffer.addList((byte) u.getId(), data);
 		}
 		if(n==4)
 			return;
@@ -411,10 +447,10 @@ public class Rec implements Runnable {
 		
 		//心跳包处理
 		if(n==0){
-			if(buffer.hearts.containsKey(id))
-				buffer.hearts.put(id, buffer.hearts.get(id));
+			if(Buffer.hearts.containsKey(id))
+				Buffer.hearts.put(id, Buffer.hearts.get(id));
 			else
-				buffer.hearts.put(id, 1);
+				Buffer.hearts.put(id, 1);
 		}
 		//发送反馈
 		codec0d c0d = new codec0d();
@@ -437,7 +473,7 @@ public class Rec implements Runnable {
 			codec c = new codec(JavaStruct.pack(c0d));
 			c.setCtw((byte) 0x0d);
 			byte[] data = JavaStruct.pack(c);
-			buffer.addList((byte) id, data);
+			Buffer.addList((byte) id, data);
 		}
 		c0d.setUsernum((byte) 1);
 		codec0d1 c0d1 = new codec0d1();
@@ -448,7 +484,7 @@ public class Rec implements Runnable {
 		c.setCtw((byte) 0x0d);
 		byte[] data = JavaStruct.pack(c);
 		for(User u:users){
-			buffer.addList((byte) u.getId(), data);
+			Buffer.addList((byte) u.getId(), data);
 		}
 	}
 	
@@ -477,7 +513,7 @@ public class Rec implements Runnable {
 				codec c = new codec(JavaStruct.pack(c09));
 				c.setCtw((byte) 0x09);
 				byte[] data = JavaStruct.pack(c);
-				buffer.addList((byte) u.getId(), data);
+				Buffer.addList((byte) u.getId(), data);
 			}
 		}
 		//向当前用户发送0x11,响应群组激活
@@ -488,7 +524,7 @@ public class Rec implements Runnable {
 		codec c = new codec(JavaStruct.pack(c11));
 		c.setCtw((byte) 0x11);
 		byte[] data = JavaStruct.pack(c);
-		buffer.addList((byte)id, data);
+		Buffer.addList((byte)id, data);
 		//在新群组中是否使能广播,向当前用户发送0x09设置使能广播
 		List<User> users = userdao.list("select * from user where broadcast = 1 and currg"
 				+ "roup = "+user.getCurrgroup()+" and ipv4 = '"+ipv4+"'");
@@ -506,7 +542,7 @@ public class Rec implements Runnable {
 		c = new codec(JavaStruct.pack(c09));
 		c.setCtw((byte) 0x09);
 		data = JavaStruct.pack(c);
-		buffer.addList((byte)id, data);
+		Buffer.addList((byte)id, data);
 		//向新群组用户发送0x0B,更新群组
 		ctw0b(user.getCurrgroup(),5);
 		user.setCurrgroup((content[2]&0x0ff)<<8|content[3]&0x0ff);
@@ -525,45 +561,45 @@ public class Rec implements Runnable {
 		int gid = user.getCurrgroup();
 		codec21 c21 = new codec21();
 		if(content[0]==0x01){
-			if(buffer.getStatus(gid-1)>0){
+			if(Buffer.getStatus(gid-1)>0){
 				c21.setResult((byte) 0x01);
-				c21.setId((short) buffer.getStatus(gid-1));
+				c21.setId((short) Buffer.getStatus(gid-1));
 			}
 			else{
-				buffer.setStatus(id,gid-1);
+				Buffer.setStatus(id,gid-1);
 				c21.setResult((byte) 0x00);
 				c21.setId((short) id);
 			}
 		}
 		else{
-			if(buffer.getStatus(gid-1)==id){
-				buffer.setStatus(0,gid-1);
+			if(Buffer.getStatus(gid-1)==id){
+				Buffer.setStatus(0,gid-1);
 				c21.setResult((byte) 0x00);
 				c21.setId((short) 0);//
 			}
 			else{
 				c21.setResult((byte) 0x01);
-				c21.setId((short) buffer.getStatus(gid-1));
+				c21.setId((short) Buffer.getStatus(gid-1));
 			}
 		}
 		if(user.getInterrupt()&&content[0]==0x01){
-			int lastid = buffer.getStatus(gid-1);
+			int lastid = Buffer.getStatus(gid-1);
 			if(lastid>0){
 				c21.setResult((byte) 0x03);
 				c21.setId((short) id);
 				codec c = new codec(JavaStruct.pack(c21));
 				c.setCtw((byte) 0x21);
 				byte[] data = JavaStruct.pack(c);
-				buffer.addList((byte)lastid, data);
+				Buffer.addList((byte)lastid, data);
 			}
-			buffer.setStatus(id,gid-1);
+			Buffer.setStatus(id,gid-1);
 			c21.setResult((byte) 0x00);
 			c21.setId((short) id);
 		}
 		codec c = new codec(JavaStruct.pack(c21));
 		c.setCtw((byte) 0x21);
 		byte[] data = JavaStruct.pack(c);
-		buffer.addList((byte)id, data);
+		Buffer.addList((byte)id, data);
 	}
 	
 	/**
@@ -589,7 +625,7 @@ public class Rec implements Runnable {
 		UserDAO userdao = new UserDAO();
 		List<User> users = userdao.listbybroad(c22.getGroupid());
 		for(User u:users){
-			buffer.addList((byte) u.getId(), data);
+			Buffer.addList((byte) u.getId(), data);
 		}
 	}
 	
@@ -622,7 +658,7 @@ public class Rec implements Runnable {
 				codec c = new codec(JavaStruct.pack(c09));
 				c.setCtw((byte) 0x09);
 				byte[] data = JavaStruct.pack(c);
-				buffer.addList((byte) u.getId(), data);
+				Buffer.addList((byte) u.getId(), data);
 			}
 		}
 		//下线通知
@@ -633,12 +669,12 @@ public class Rec implements Runnable {
 		user.setStatus(false);
 		user.setMark(null);
 		userdao.update(user);
-		if(buffer.getSocketChannel(id)!=null){
-			buffer.getSocketChannel(id).close();
-			buffer.delSocketChannel(id);
+		if(Buffer.getSocketChannel(id)!=null){
+			Buffer.getSocketChannel(id).close();
+			Buffer.delSocketChannel(id);
 		}
-		if(buffer.getStatus(user.getCurrgroup()-1)==id)
-			buffer.setStatus(0, user.getCurrgroup()-1);
+		if(Buffer.getStatus(user.getCurrgroup()-1)==id)
+			Buffer.setStatus(0, user.getCurrgroup()-1);
 	}
 
 }
